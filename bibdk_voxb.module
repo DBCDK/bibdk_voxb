@@ -1,0 +1,76 @@
+<?php
+
+module_load_include('inc', 'bibdk_voxb', 'bibdk_voxb.worktabs');
+module_load_include('inc', 'bibdk_voxb', 'bibdk_voxb.theme');
+
+/** Implements hook_menu
+ * 
+ */
+function bibdk_voxb_menu() {
+  $items = array();
+
+  $items['voxb/ajax/update_rating'] = array(
+    'title' => 'VoxB rating handler',
+    'description' => '',
+    // 'page arguments' => array(3),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('search content'),
+    'page callback' => 'bibdk_voxb_rating',
+  );
+
+  return $items;
+}
+
+function bibdk_voxb_rating() {
+  $isbn = $_POST['isbn'];
+  $message = t('Rate me', array(), array('context' => 'voxb'));
+  $response = bibdk_voxb_get_rating($isbn);
+  $ret = array(
+    'isbn' => $isbn,
+    'rating' => $response,
+    'markup' => theme('voxb_rating', array('object' => $response, 'isbn' => $isbn, 'title' => $message)),
+  );
+
+  drupal_json_output($ret);
+  exit;
+}
+
+function bibdk_voxb_get_rating($isbn) {
+  // this is a working isbn (Titus alene) 978-87-91318-41-2
+  try {
+    $response = open_voxb_fetchDataRequest_by_isbn($isbn);
+  } catch (Exception $e) {
+    return FALSE;
+  }
+
+  return bibdk_voxb_parse_fetchdata_request($response);
+}
+
+function bibdk_voxb_parse_fetchdata_request($xml) {
+  $xpath = bibdk_voxb_get_xpath($xml);
+  
+  if ($xpath === FALSE) {
+    throw new Exception;
+  }
+  
+  $query = '//voxb:averageRating';
+  $ret->rating = $xpath->query($query)->item(0)->nodeValue;
+
+  $query = '//voxb:totalNumberOfRaters';
+  $ret->ratingCount = $xpath->query($query)->item(0)->nodeValue;
+
+
+  return $ret;
+}
+
+function bibdk_voxb_get_xpath($xml) {
+  $dom = new DOMDocument();
+  if (!@$dom->loadXML($xml)) {
+    return FALSE;
+  }
+  $xp = new DOMXPath($dom);
+  $xp->registerNamespace('voxb', 'http://oss.dbc.dk/ns/voxb');
+
+  return $xp;
+}
+
