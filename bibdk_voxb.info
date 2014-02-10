@@ -5,6 +5,7 @@ package = bibliotek.dk
 version = 7.x-1.0
 project = bibdk_voxb
 files[] = bibdk_voxb.theme.inc
+files[] = test/bibdkVoxbWeb.test
 dependencies[] = open_voxb
 
 ; @todo remove these lines, and attach js and css in worktabs.inc
