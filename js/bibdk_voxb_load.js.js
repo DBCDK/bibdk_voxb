@@ -1,7 +1,8 @@
 (function ($) {
     
-    Drupal.bibdkUpdateRating = function(voxb){
-        $('.bibdk_voxb_tab[data-isbn=' + voxb.isbn + ']').html(voxb.rating.rating + voxb.rating.ratingCount + voxb.markup);
+    Drupal.bibdkSetRating = function(voxb){
+        // $('.bibdk_voxb_tab[data-isbn=' + voxb.isbn + ']').html(voxb.rating.rating + voxb.rating.ratingCount + voxb.markup);
+        $('.bibdk_voxb_tab[data-isbn=' + voxb.isbn + ']').html(voxb.markup);
         Drupal.voxb_settings.init(voxb);
     }
     
@@ -14,9 +15,8 @@
                 isbn:isbn
             },
             dataType:'json',
-            success:Drupal.bibdkUpdateRating
+            success:Drupal.bibdkSetRating
         });
-       
     }
     
     
@@ -44,4 +44,3 @@
     
   
   
-})(jQuery);
