@@ -1,0 +1,106 @@
+<?php
+
+class bibdkVoxbUnitTestCase extends DrupalUnitTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => t('bibliotek.dk voxb  : Unit tests'),
+      'description' => t('Check if parsing voxb returns valid result'),
+      'group' => t('bibliotek.dk'),
+    );
+  }
+
+  public function setUp() {
+    module_load_include('module', 'bibdk_voxb');
+    parent::setUp();
+  }
+
+  public function testFetchDataParsing() {
+    $path = drupal_get_path('module', 'open_voxb_mockup');
+    $xml = file_get_contents($path . '/fetchDataResponse.xml');
+
+    $xml = trim($xml);
+
+    $resp = bibdk_voxb_parse_fetchdata_request($xml);
+    $this->assertTrue(isset($resp->rating), 'rating is set on response object');
+    $this->assertTrue(isset($resp->ratingCount), 'ratingCount is set on response object');
+
+    $xml = 'hest';
+    try {
+      $resp = bibdk_voxb_parse_fetchdata_request($xml);
+    } catch (Exception $e) {
+      $this->assertTrue(TRUE, 'Exception thrown with invalid xml');
+    }
+  }
+
+  public function testHund() {
+    $this->assertTrue(TRUE, 'true is true');
+  }
+}
+
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+class bibdkVoxbWebTestCase extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => t('bibdk_voxb : frontend test'),
+      'description' => t('test if frontend behaves as expected'),
+      'group' => t('bibliotek.dk'),
+    );
+  }
+
+  public function setUp() {
+    module_enable(array('open_voxb_mockup'));
+    menu_rebuild();
+    parent::setUp(array('bibdk_voxb', 'open_voxb', 'open_voxb_mockup', 'ting_openformat', 'worktabs'));
+    variable_set('open_voxb_url', $this->getAbsoluteUrl('/open_voxb_mockup/'));
+    variable_set('ting_search_url', $this->getAbsoluteUrl('/open_voxb_mockup/'));
+    //  variable_set('ting_search_url', 'http://bibliotek.dk/openbibdk/0.8/');
+    variable_set('search_active_modules', array('ting_openformat' => 'ting_openformat'));
+    variable_set('search_default_module', 'ting_openformat');
+    user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array('access content', 'search content'));
+    menu_rebuild();
+  }
+
+  public function testRun() {
+    $this->_testHest();
+    $this->_testSearch();
+  }
+
+  public function _testHest() {
+    debug(__FUNCTION__);
+    $this->assertTrue(TRUE);
+  }
+
+  // make a searh
+  public function _testSearch() {
+    debug(__FUNCTION__);
+    $this->drupalGet('search/work/dkcclterm.ib=9788791318412#full-view');
+    // get a rating object
+    $isbn = '978-87-91318-41-2'; // Titus alene
+    $voxb_obj = bibdk_voxb_get_rating($isbn);
+
+    //assert that object has correct attributes
+    $this->assertTrue(isset($voxb_obj->rating), 'Rating is set');
+    $this->assertTrue(isset($voxb_obj->ratingCount), 'ratingCount is set');
+  }
+
+  public function tearDown() {
+    parent::tearDown();
+    // clean up the real website
+    $path = $this->getAbsoluteUrl('open_voxb_mockup/disable');
+    debug($path);
+    $ch = curl_init();
+
+    curl_setopt($ch, CURLOPT_URL, $path);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+
+    curl_exec($ch);
+    curl_close($ch);
+  }
+
+}
