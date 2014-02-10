@@ -25,6 +25,7 @@ function bibdk_voxb_rating() {
   $isbn = $_POST['isbn'];
   $message = t('Rate me', array(), array('context' => 'voxb'));
   $response = bibdk_voxb_get_rating($isbn);
+  
   $ret = array(
     'isbn' => $isbn,
     'rating' => $response,
@@ -40,10 +41,16 @@ function bibdk_voxb_get_rating($isbn) {
   try {
     $response = open_voxb_fetchDataRequest_by_isbn($isbn);
   } catch (Exception $e) {
-    return FALSE;
+    $ret->error=$e->getMessage();
   }
 
-  return bibdk_voxb_parse_fetchdata_request($response);
+  try{  
+    $ret = bibdk_voxb_parse_fetchdata_request($response);
+  }
+  catch( Exception $e){
+    $ret->error=$e->getMessage();
+  }
+  return $ret;
 }
 
 function bibdk_voxb_parse_fetchdata_request($xml) {
