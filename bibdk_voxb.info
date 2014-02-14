@@ -7,6 +7,7 @@ project = bibdk_voxb
 files[] = bibdk_voxb.theme.inc
 files[] = test/bibdkVoxbWeb.test
 dependencies[] = open_voxb
+dependencies[] = bibdk_provider
 
 ; @todo remove these lines, and attach js and css in worktabs.inc
 ; scripts[] = js/bibdk_voxb_load.js
