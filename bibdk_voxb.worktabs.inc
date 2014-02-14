@@ -20,9 +20,6 @@ function bibdk_voxb_worktabs_items($tabs, $entity) {
   
   $tabs['reviews']['voxb'] = array(
     'title' => t('VOXB', array(), array('context' => 'voxb')),
-    //'btn_txt_closed' => t('read or write review',array(), array('context'=>'voxb')),
-    //'btn_txt_open' => '',
-    // 'rendered' => drupal_render($trigger_form),
     'rendered' => drupal_render($render_array),
     'weight' => 0,
   );
@@ -30,6 +27,10 @@ function bibdk_voxb_worktabs_items($tabs, $entity) {
   return $tabs;
 }
 
+/** Get a container for voxb-ratings
+ * @param object $entity; the manifestation holding the identifier(ISBN,ISSN,LOCALID etc.)
+ * @return mixed; FALSE if no identifier, else a render array (<div></div>)
+ */
 function bibdk_voxb_get_rating_container($entity) {
   $isbn = $entity->getISBN();
   
