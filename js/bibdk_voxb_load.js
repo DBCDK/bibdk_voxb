@@ -10,7 +10,7 @@
         var isbn = $(div).attr('data-isbn');
         if (isbn.length > 0){
             var request = $.ajax({
-                url:Drupal.settings.basePath + 'voxb/ajax/update_rating',
+                url:Drupal.settings.basePath + 'voxb/ajax/get_rating',
                 type:'POST',
                 data:{
                     isbn:isbn
