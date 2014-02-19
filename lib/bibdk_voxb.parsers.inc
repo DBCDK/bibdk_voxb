@@ -95,7 +95,6 @@ function _bibdk_voxb_parse_get_voxb_response($xml) {
  */
 function bibdk_voxb_parse_fetchdata_request($xml) {
     $xpath = bibdk_voxb_get_xpath($xml);
-
     if ($xpath === FALSE) {
         throw new Exception;
     }
