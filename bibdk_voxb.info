@@ -4,11 +4,11 @@ core = 7.x
 package = bibliotek.dk
 version = 7.x-1.0
 project = bibdk_voxb
-files[] = bibdk_voxb.theme.inc
+
+; class definitions
+files[] = lib/bibdkVoxbUser.php
 files[] = test/bibdkVoxbWeb.test
+files[] = test/bibdkVoxbUnit.test
+
 dependencies[] = open_voxb
 dependencies[] = bibdk_provider
-
-; @todo remove these lines, and attach js and css in worktabs.inc
-; scripts[] = js/bibdk_voxb_load.js
-; stylesheets[all][] = css/voxb.css

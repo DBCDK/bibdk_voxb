@@ -1,0 +1,40 @@
+<?php
+
+class bibdkVoxbUnitTestCase extends DrupalUnitTestCase
+{
+
+    public static function getInfo() {
+        return array(
+            'name' => t('bibliotek.dk voxb  : Unit tests'),
+            'description' => t('Check if parsing voxb returns valid result'),
+            'group' => t('bibliotek.dk'),
+        );
+    }
+
+    public function setUp() {
+        module_load_include('module', 'bibdk_voxb');
+        parent::setUp();
+    }
+
+    public function testFetchDataParsing() {
+        $path = drupal_get_path('module', 'open_voxb_mockup');
+        $xml = file_get_contents($path . '/fetchDataResponse.xml');
+
+        $xml = trim($xml);
+
+        $resp = bibdk_voxb_parse_fetchdata_request($xml);
+        $this->assertTrue(isset($resp->rating), 'rating is set on response object');
+        $this->assertTrue(isset($resp->ratingCount), 'ratingCount is set on response object');
+
+        $xml = 'hest';
+        try {
+            $resp = bibdk_voxb_parse_fetchdata_request($xml);
+        } catch (Exception $e) {
+            $this->assertTrue(TRUE, 'Exception thrown with invalid xml');
+        }
+    }
+
+    public function testHund() {
+        $this->assertTrue(TRUE, 'true is true');
+    }
+}
