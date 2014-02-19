@@ -1,35 +1,58 @@
 (function ($) {
 
-    Drupal.bibdkSetRating = function(voxb){
-        // $('.bibdk_voxb_tab[data-isbn=' + voxb.isbn + ']').html(voxb.rating.rating + voxb.rating.ratingCount + voxb.markup);
-        $('.bibdk_voxb_tab[data-isbn=' + voxb.isbn + ']').html(voxb.markup);
-        Drupal.voxb_settings.init(voxb);
-    }
-
-    Drupal.bibdkGetRating = function(div){
-        var isbn = $(div).attr('data-isbn');
-        if (isbn.length > 0){
-            var request = $.ajax({
-                url:Drupal.settings.basePath + 'voxb/ajax/get_rating',
-                type:'POST',
-                data:{
-                    isbn:isbn
-                },
-                dataType:'json',
-                success:Drupal.bibdkSetRating
-            });
+    Drupal.bibdkSetRating = function (voxb) {
+        // @TODO check voxb object, and show an errormessage on error
+        if (voxb.error) {
+            $('.bibdk_voxb_tab[data-pid=' + voxb.pid + ']').html('ERROR');
+        }
+        else {
+            $('.bibdk_voxb_tab[data-pid=' + voxb.pid + ']').html(voxb.markup);
+            Drupal.voxb_settings.init(voxb);
         }
     }
 
+    Drupal.bibdkGetRating = function (div) {
+        div.find('.rating').last().append('<span class="ajax-progress" style="padding-left:2em; margin-top:-3px"><span class="throbber"></span></span>');
+        var pid = $(div).attr('data-pid');
+        var request = $.ajax({
+            url: Drupal.settings.basePath + 'voxb/ajax/get_rating',
+            type: 'POST',
+            data: {
+                //isbn: isbn
+                pid: pid
+            },
+            dataType: 'json',
+            success: Drupal.bibdkSetRating
+        });
+    }
 
+    Drupal.voxbUpdateRating = function (link) {
+        var href = Drupal.settings.basePath + link.attr('href');
+        // find the div holding the link
+        var div = link.closest('.bibdk_voxb_tab');
+        // show a throbber
+
+        // do an ajax call. No response is expected
+        $.get(href, function (data) {
+            // update after request is completed
+            Drupal.bibdkGetRating(div);
+        });
+    };
 
     Drupal.voxb_settings = {
-        init: function(){
-            $('.voxb-rating.rate-enabled .rating').mouseover(function(e) {
+        init: function () {
+            // add mouseover
+            $('.voxb-rating.rate-enabled .rating').mouseover(function (e) {
                 $(this).addClass('star-hover');
             });
-            $('.voxb-rating.rate-enabled .rating').mouseout(function(e) {
+            // add mouseout
+            $('.voxb-rating.rate-enabled .rating').mouseout(function (e) {
                 $(this).removeClass('star-hover');
+            });
+            // add click
+            $('.voxb-rating.rate-enabled .rating').click(function (e) {
+                e.preventDefault();
+                Drupal.voxbUpdateRating($(this));
             });
         }
     };
@@ -37,12 +60,12 @@
     Drupal.behaviors.bibdk_voxb_load = {
         attach: function (context) {
             $('.reviews', context).click(function (e) {
-                var href= $(this).attr('href');
-                var voxb_tab =  $(href).find('.bibdk_voxb_tab');
+                var href = $(this).attr('href');
+                var voxb_tab = $(href).find('.bibdk_voxb_tab');
                 Drupal.bibdkGetRating(voxb_tab);
             });
         }
     };
 }
-(jQuery));
+    (jQuery));
 
