@@ -29,6 +29,10 @@ class bibdkVoxbUser
         return $this->userData;
     }
 
+    public function setUserData($xml){
+      $this->userData=$this->parseFetchMyDataResponse($xml);
+    }
+
     private function parseFetchMyDataResponse($xml) {
         $xp = bibdk_voxb_get_xpath($xml);
         if($xp === FALSE){

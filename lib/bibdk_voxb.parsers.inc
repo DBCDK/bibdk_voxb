@@ -15,7 +15,6 @@ function bibdk_voxb_parse_bind_voxb_response($xml) {
     $xp = bibdk_voxb_get_xpath($xml);
   }
   catch (bibdkVoxbException $e) {
-    watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
     // rethrow
     throw $e;
   }
@@ -39,14 +38,10 @@ function bibdk_voxb_parse_create_user_response($xml) {
     $xp = bibdk_voxb_get_xpath($xml);
   }
   catch (bibdkVoxbException $e) {
-    watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
     // rethrow
     throw $e;
   }
 
-  if ($xp === FALSE) {
-    return FALSE;
-  }
   $query = '//voxb:userId';
   $nodelist = $xp->query($query);
   if ($nodelist->length != 1) {
@@ -57,20 +52,6 @@ function bibdk_voxb_parse_create_user_response($xml) {
   return $nodelist->item(0)->nodeValue;
 }
 
-/** Parse the response from VOXB::fetchDataRequest
- * @param $xml
- * @return bool
- */
-/*function bibdk_voxb_parse_fetchMyDataRequest($xml) {
-    $xp = bibdk_voxb_get_xpath($xml);
-    $query = '//voxb:error';
-    $nodelist = $xp->query($query);
-    if ($nodelist->length > 0) {
-        // something went wrong
-        // @TODO log
-        return FALSE;
-    }
-}*/
 
 /** Parse response from OUI::getVoxb
  * @param $xml
@@ -82,7 +63,6 @@ function _bibdk_voxb_parse_get_voxb_response($xml) {
     $xp = bibdk_voxb_get_xpath($xml);
   }
   catch (bibdkVoxbException $e) {
-    watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
     // rethrow
     throw $e;
   }
@@ -91,7 +71,6 @@ function _bibdk_voxb_parse_get_voxb_response($xml) {
   $nodelist = $xp->query($query);
   if ($nodelist->length > 0) {
     // this is fatal either a database error, or somehow user is not in database
-    watchdog('voxb', 'OUI returned unexpected result: %hest ', array('%hest' => $xml), WATCHDOG_ERROR);
     throw bibdkVoxbException::ouiError();
   }
 
@@ -116,7 +95,6 @@ function bibdk_voxb_parse_fetchdata_request($xml) {
     $xpath = bibdk_voxb_get_xpath($xml);
   }
   catch (bibdkVoxbException $e) {
-    watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
     // rethrow
     throw $e;
   }
