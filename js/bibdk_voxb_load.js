@@ -3,7 +3,8 @@
     Drupal.bibdkSetRating = function (voxb) {
         // @TODO check voxb object, and show an errormessage on error
         if (voxb.error) {
-            $('.bibdk_voxb_tab[data-pid=' + voxb.pid + ']').html('ERROR');
+            //$('.bibdk_voxb_tab[data-pid=' + voxb.pid + ']').html(voxb.error);
+            $('.bibdk_voxb_tab[data-pid=' + voxb.pid + ']').append(voxb.error);
         }
         else {
             $('.bibdk_voxb_tab[data-pid=' + voxb.pid + ']').html(voxb.markup);
@@ -34,8 +35,14 @@
 
         // do an ajax call. No response is expected
         $.get(href, function (data) {
-            // update after request is completed
-            Drupal.bibdkGetRating(div);
+            if (data.error) {
+                data.pid = $(div).attr('data-pid');
+                Drupal.bibdkSetRating(data);
+            }
+            else {
+                // update after request is completed
+                Drupal.bibdkGetRating(div);
+            }
         });
     };
 

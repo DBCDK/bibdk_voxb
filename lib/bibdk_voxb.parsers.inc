@@ -11,19 +11,23 @@
  * @return bool|string
  */
 function bibdk_voxb_parse_bind_voxb_response($xml) {
+  try {
     $xp = bibdk_voxb_get_xpath($xml);
+  }
+  catch (bibdkVoxbException $e) {
+    watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
+    // rethrow
+    throw $e;
+  }
 
-    if ($xp === FALSE) {
-        return FALSE;
-    }
-    $query = '//oui:userId';
-    $nodelist = $xp->query($query);
-    if ($nodelist->length != 1) {
-        // something is wrong
-        return FALSE;
-    }
+  $query = '//oui:userId';
+  $nodelist = $xp->query($query);
+  if ($nodelist->length != 1) {
+    // something is wrong
+    return FALSE;
+  }
 
-    return $nodelist->item(0)->nodeValue;
+  return $nodelist->item(0)->nodeValue;
 }
 
 /** Parse the response from VOXB::createUserRequest
@@ -31,27 +35,33 @@ function bibdk_voxb_parse_bind_voxb_response($xml) {
  * @return bool|string
  */
 function bibdk_voxb_parse_create_user_response($xml) {
+  try {
     $xp = bibdk_voxb_get_xpath($xml);
+  }
+  catch (bibdkVoxbException $e) {
+    watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
+    // rethrow
+    throw $e;
+  }
 
-    if ($xp === FALSE) {
-        return FALSE;
-    }
-    $query = '//voxb:userId';
-    $nodelist = $xp->query($query);
-    if ($nodelist->length != 1) {
-        // something is wrong
-        return FALSE;
-    }
+  if ($xp === FALSE) {
+    return FALSE;
+  }
+  $query = '//voxb:userId';
+  $nodelist = $xp->query($query);
+  if ($nodelist->length != 1) {
+    // something is wrong
+    return FALSE;
+  }
 
-    return $nodelist->item(0)->nodeValue;
+  return $nodelist->item(0)->nodeValue;
 }
-
 
 /** Parse the response from VOXB::fetchDataRequest
  * @param $xml
  * @return bool
  */
-function bibdk_voxb_parse_fetchMyDataRequest($xml) {
+/*function bibdk_voxb_parse_fetchMyDataRequest($xml) {
     $xp = bibdk_voxb_get_xpath($xml);
     $query = '//voxb:error';
     $nodelist = $xp->query($query);
@@ -60,8 +70,7 @@ function bibdk_voxb_parse_fetchMyDataRequest($xml) {
         // @TODO log
         return FALSE;
     }
-}
-
+}*/
 
 /** Parse response from OUI::getVoxb
  * @param $xml
@@ -69,23 +78,32 @@ function bibdk_voxb_parse_fetchMyDataRequest($xml) {
  * @throws Exception
  */
 function _bibdk_voxb_parse_get_voxb_response($xml) {
+  try {
     $xp = bibdk_voxb_get_xpath($xml);
-    $query = '//oui:error';
-    $nodelist = $xp->query($query);
-    if ($nodelist->length > 0) {
-        // @TODO this is fatal either a database error, or somehow
-        // user is not in database
-        throw new Exception;
-    }
-    $query = '//oui:voxbId';
-    $nodelist = $xp->query($query);
-    if ($nodelist->length != 1) {
-        // this is NOT fatal, but something is wrong
-        return FALSE;
-    }
-    $voxb_id = $nodelist->item(0)->nodeValue;
+  }
+  catch (bibdkVoxbException $e) {
+    watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
+    // rethrow
+    throw $e;
+  }
 
-    return $voxb_id;
+  $query = '//oui:error';
+  $nodelist = $xp->query($query);
+  if ($nodelist->length > 0) {
+    // this is fatal either a database error, or somehow user is not in database
+    watchdog('voxb', 'OUI returned unexpected result: %hest ', array('%hest' => $xml), WATCHDOG_ERROR);
+    throw bibdkVoxbException::ouiError();
+  }
+
+  $query = '//oui:voxbId';
+  $nodelist = $xp->query($query);
+  if ($nodelist->length != 1) {
+    // this is NOT fatal, but something is wrong
+    return FALSE;
+  }
+  $voxb_id = $nodelist->item(0)->nodeValue;
+
+  return $voxb_id;
 }
 
 /** Parse response xml from VOXB::fetchDataRequest
@@ -94,19 +112,22 @@ function _bibdk_voxb_parse_get_voxb_response($xml) {
  * @throws Exception
  */
 function bibdk_voxb_parse_fetchdata_request($xml) {
+  try {
     $xpath = bibdk_voxb_get_xpath($xml);
-    if ($xpath === FALSE) {
-        throw new Exception;
-    }
+  }
+  catch (bibdkVoxbException $e) {
+    watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
+    // rethrow
+    throw $e;
+  }
 
-    $query = '//voxb:averageRating';
-    $ret->rating = $xpath->query($query)->item(0)->nodeValue;
+  $query = '//voxb:averageRating';
+  $ret->rating = $xpath->query($query)->item(0)->nodeValue;
 
-    $query = '//voxb:totalNumberOfRaters';
-    $ret->ratingCount = $xpath->query($query)->item(0)->nodeValue;
+  $query = '//voxb:totalNumberOfRaters';
+  $ret->ratingCount = $xpath->query($query)->item(0)->nodeValue;
 
-
-    return $ret;
+  return $ret;
 }
 
 /** Initialize an xpath object from given xml
@@ -114,15 +135,15 @@ function bibdk_voxb_parse_fetchdata_request($xml) {
  * @return bool|DOMXPath; False on failure, object on success
  */
 function bibdk_voxb_get_xpath($xml) {
-    $dom = new DOMDocument();
-    if (!@$dom->loadXML($xml)) {
-        return FALSE;
-    }
-    $xp = new DOMXPath($dom);
-    $xp->registerNamespace('voxb', 'http://oss.dbc.dk/ns/voxb');
-    $xp->registerNamespace('oui', 'http://oss.dbc.dk/ns/openuserinfo');
+  $dom = new DOMDocument();
+  if (!@$dom->loadXML($xml)) {
+    throw bibdkVoxbException::malformedXml($xml);
+  }
+  $xp = new DOMXPath($dom);
+  $xp->registerNamespace('voxb', 'http://oss.dbc.dk/ns/voxb');
+  $xp->registerNamespace('oui', 'http://oss.dbc.dk/ns/openuserinfo');
 
-    return $xp;
+  return $xp;
 }
 
 /** Helper function. Check if needle is in multidimensional array
@@ -130,13 +151,13 @@ function bibdk_voxb_get_xpath($xml) {
  * @param array $haystack
  * @return mixed; the array holding the needle if found, FALSE if not
  */
-function bibdk_voxb_in_multi_array( $needle,array $haystack ){
-    foreach( $haystack as $item){
-        // NOTICE recursive
-        if( ($item == $needle) || (is_array($item) && bibdk_voxb_in_multi_array($needle, $item)) ){
-            return $item;
-        }
+function bibdk_voxb_in_multi_array($needle, array $haystack) {
+  foreach ($haystack as $item) {
+    // NOTICE recursive
+    if (($item == $needle) || (is_array($item) && bibdk_voxb_in_multi_array($needle, $item))) {
+      return $item;
     }
+  }
 
-    return FALSE;
+  return FALSE;
 }

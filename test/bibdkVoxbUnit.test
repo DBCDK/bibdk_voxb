@@ -17,8 +17,12 @@ class bibdkVoxbUnitTestCase extends DrupalUnitTestCase
     }
 
     public function testFetchDataParsing() {
+        $path = drupal_get_path('module', 'bibdk_voxb');
+        require_once($path.'/lib/bibdk_voxb.parsers.inc');
+
         $path = drupal_get_path('module', 'open_voxb_mockup');
         $xml = file_get_contents($path . '/fetchDataResponse.xml');
+
 
         $xml = trim($xml);
 
@@ -29,9 +33,29 @@ class bibdkVoxbUnitTestCase extends DrupalUnitTestCase
         $xml = 'hest';
         try {
             $resp = bibdk_voxb_parse_fetchdata_request($xml);
-        } catch (Exception $e) {
-            $this->assertTrue(TRUE, 'Exception thrown with invalid xml');
+        } catch (bibdkVoxbException $e) {
+            $this->assertTrue(TRUE, 'bibdkVoxbException thrown with invalid xml');
         }
+    }
+
+    public function testInMultiArray(){
+        $path = drupal_get_path('module', 'bibdk_voxb');
+        require_once($path.'/lib/bibdk_voxb.parsers.inc');
+
+        $haystack = array(array('hest'=>'hund'),'ko'=>array('fisk'=>'ged'),array('zebra'=>array('krokodille'=>array('fugl'))));
+
+        // test that value in a nested array is found by method
+        $needle = 'fugl';
+        $result = bibdk_voxb_in_multi_array( $needle, $haystack);
+        $this->assertTrue(is_array($result),'found nested needle in haystack');
+
+        $needle = 'hund';
+        $result = bibdk_voxb_in_multi_array( $needle, $haystack);
+        $this->assertTrue(is_array($result),'found needle in first level haystack');
+
+        $needle = 'so';
+        $result = bibdk_voxb_in_multi_array( $needle, $haystack);
+        $this->assertTrue(($result === FALSE),'return FALSE when needle not found');
     }
 
     public function testHund() {
