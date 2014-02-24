@@ -108,6 +108,14 @@ function bibdk_voxb_rate_me($id, $rating) {
 
   // check if user has already rated this material
   $data_array = bibdk_voxb_in_multi_array($id, $data);
+
+  if ($data_array === FALSE) {
+    // this is from an exception thrown in bibdkVoxbUser class - malformed xml
+    // set a message for the user
+    drupal_set_message(t('VOXB:An error occured',array(), array('context'=>'VOXB')));
+    return;
+  }
+
   if (empty($data_array)) {
     // this is a new rating
     $response = open_voxb_createMyDataRequest($id, $rating, $voxb_id);
@@ -119,7 +127,7 @@ function bibdk_voxb_rate_me($id, $rating) {
     $identifier = $data_array['voxb:voxbIdentifier']['#text'];
     // no need for error check here if it fails it fails
     $response = open_voxb_updateRating($identifier, $rating);
-    //@TODO parse response
+    //@TODO parse response to see if all went well
   }
 }
 
@@ -137,7 +145,7 @@ function bibdk_voxb_user_check() {
     return FALSE;
   }
 
-  // @TODO check $_SESSION
+  // @TODO .. CACHE .. in $_SESSION ??
 
   //get the voxb_id via openuserinfo webservice
   $xml = ding_provider_invoke('user', 'get_voxb', $user->mail);
