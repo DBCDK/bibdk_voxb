@@ -6,62 +6,70 @@
  * Date: 2/17/14
  * Time: 1:23 PM
  */
-class bibdkVoxbUser
-{
-    private $userId;
-    private $xp;
-    private $userData;
+class bibdkVoxbUser {
 
-    public function __construct($voxb_id) {
-        $this->userId = $voxb_id;
+  private $userId;
+  private $xp;
+  private $userData;
+
+  public function __construct($voxb_id) {
+    $this->userId = $voxb_id;
+  }
+
+  public function getUserId() {
+    return $this->userId;
+  }
+
+  public function userData() {
+    if (!isset($this->userData)) {
+      $response = open_voxb_fetchMyDataRequest($this->userId);
+      // @TODO errorcheck
+      $this->userData = $this->parseFetchMyDataResponse($response);
     }
 
-    public function getUserId() {
-        return $this->userId;
+    return $this->userData;
+  }
+
+  public function setUserData($xml) {
+    $this->userData = $this->parseFetchMyDataResponse($xml);
+  }
+
+  private function parseFetchMyDataResponse($xml) {
+
+    try {
+      $xp = bibdk_voxb_get_xpath($xml);
+    }
+    catch (bibdkVoxbException $e) {
+      // this is malformed xml - LOG
+      watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
+      return FALSE;
     }
 
-    public function userData() {
-        if (!isset($this->userData)) {
-            $response = open_voxb_fetchMyDataRequest($this->userId);
-            // @TODO errorcheck
-            $this->userData=$this->parseFetchMyDataResponse($response);
-        }
-        return $this->userData;
+    $query = '//voxb:result';
+    $nodelist = $xp->query($query);
+
+    if ($nodelist->length == 0) {
+      return array();
     }
 
-    public function setUserData($xml){
-      $this->userData=$this->parseFetchMyDataResponse($xml);
+    foreach ($nodelist as $node) {
+      $ret[] = $this->parseNode($node);
     }
 
-    private function parseFetchMyDataResponse($xml) {
-        $xp = bibdk_voxb_get_xpath($xml);
-        if($xp === FALSE){
-            return;
-        }
+    return $ret;
+  }
 
-        $query = '//voxb:result';
-        $nodelist = $xp->query($query);
-
-        if($nodelist->length == 0){
-            $this->userData = array();
-        }
-
-        foreach( $nodelist as $node ){
-            $ret[] = $this->parseNode($node);
-        }
-        return $ret;
+  private function parseNode($node) {
+    foreach ($node->childNodes as $child) {
+      if ($child->hasChildNodes()) {
+        // NOTICE recursive
+        $ret[$child->nodeName] = $this->parseNode($child);
+      }
+      else {
+        $ret[$child->nodeName] = $child->nodeValue;
+      }
     }
 
-    private function parseNode($node){
-        foreach($node->childNodes as $child){
-            if($child->hasChildNodes()){
-                // NOTICE recursive
-               $ret[$child->nodeName] = $this->parseNode($child);
-            }
-            else{
-                $ret[$child->nodeName] = $child->nodeValue;
-            }
-        }
-        return $ret;
-    }
+    return $ret;
+  }
 }
