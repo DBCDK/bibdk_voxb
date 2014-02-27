@@ -1,4 +1,4 @@
-<?
+<?php
 module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.worktabs');
 module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.parsers');
 module_load_include('inc', 'bibdk_voxb', 'bibdk_voxb.theme');
