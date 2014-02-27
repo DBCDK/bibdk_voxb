@@ -43,6 +43,6 @@ function bibdk_voxb_theme() {
   // $variables['rating_block_class'] = implode(' ', $rating_block_class);
   $variables['star_class'] = implode(' ', $star_class);
 }*/
-?>
+
 
 
