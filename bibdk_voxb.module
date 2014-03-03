@@ -90,6 +90,7 @@ function bibdk_voxb_get_rating($pid) {
 }
 
 function bibdk_voxb_rate_me($id, $rating) {
+
   // we have five stars, and rating is from 1-100
   // multiply by 20
   $rating = $rating * 20;
@@ -101,20 +102,19 @@ function bibdk_voxb_rate_me($id, $rating) {
     drupal_json_output($ret);
     exit;
   }
+
   // init a userobject to handle user data
   $voxbUser = new bibdkVoxbUser($voxb_id);
   // data holds all activity from user (review, ratings, tags etc.)
   $data = $voxbUser->userData();
 
+  $data_array = array();
+  if(!empty($data)){
   // check if user has already rated this material
   $data_array = bibdk_voxb_in_multi_array($id, $data);
-
-  if ($data_array === FALSE) {
-    // this is from an exception thrown in bibdkVoxbUser class - malformed xml
-    // set a message for the user
-    drupal_set_message(t('VOXB:An error occured',array(), array('context'=>'VOXB')));
-    return;
   }
+
+
 
   if (empty($data_array)) {
     // this is a new rating
@@ -129,6 +129,8 @@ function bibdk_voxb_rate_me($id, $rating) {
     $response = open_voxb_updateRating($identifier, $rating);
     //@TODO parse response to see if all went well
   }
+
+
 }
 
 /** Check user
