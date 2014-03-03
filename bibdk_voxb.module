@@ -2,11 +2,25 @@
 module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.worktabs');
 module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.parsers');
 module_load_include('inc', 'bibdk_voxb', 'bibdk_voxb.theme');
+module_load_include('inc', 'bibdk_voxb', 'bibdk_voxb.blog');
 /** Implements hook_menu
  *
  */
 function bibdk_voxb_menu() {
   $items = array();
+
+  $path = drupal_get_path('module', 'bibdk_voxb');
+
+  $items['voxb/ajax/review'] = array(
+    'title' => t('Write review', array(), array('context' => 'voxb')),
+    'type' => MENU_CALLBACK,
+    'description' => '',
+    //'access calback' => TRUE,
+    'access arguments' => array('create blog content'),
+    // 'access arguments' => array('search content'),
+    'page callback' => 'bibdk_voxb_get_review_form',
+    'file' => '/bibdk_voxb.blog.inc',
+  );
 
   $items['voxb/ajax/get_rating'] = array(
     'title' => 'VoxB rating handler',
@@ -33,6 +47,11 @@ function bibdk_voxb_menu() {
  */
 function bibdk_voxb_rating() {
   $pid = $_POST['pid'];
+
+  //return node_add('blog');
+
+  $pid = '870970-basis:27262589';
+
   $message = t('Rate me', array(), array('context' => 'voxb'));
   $response = bibdk_voxb_get_rating($pid);
 
@@ -49,13 +68,36 @@ function bibdk_voxb_rating() {
       'markup' => theme('voxb_rating', array(
         'object' => $response,
         'pid' => $pid,
-        'title' => $message
+        'title' => $message,
+       // 'review_link' => drupal_render(bibdk_voxb_review_link($pid)),
       )),
     );
   }
 
+  // return $ret['markup'];
   drupal_json_output($ret);
   exit;
+}
+
+function bibdk_voxb_review_link($pid) {
+  $link = array(
+    '#theme' => 'link',
+    '#text' => t('voxb_write_review', array(), array('context' => 'voxb')),
+    '#path' => 'voxb/ajax/review',
+    '#weight' => 0,
+    '#options' => array(
+      'query' => array('pid' => $pid),
+      'attributes' => array(
+        'class' => array(
+          'bibdk_review_link',
+        ),
+        'id' => drupal_html_id('bibdk_voxb_review_' . $pid),
+      ),
+      'html' => FALSE,
+    ),
+  );
+
+  return $link;
 }
 
 function bibdk_voxb_set_error($message, $type) {
@@ -90,7 +132,6 @@ function bibdk_voxb_get_rating($pid) {
 }
 
 function bibdk_voxb_rate_me($id, $rating) {
-
   // we have five stars, and rating is from 1-100
   // multiply by 20
   $rating = $rating * 20;
@@ -114,8 +155,6 @@ function bibdk_voxb_rate_me($id, $rating) {
   $data_array = bibdk_voxb_in_multi_array($id, $data);
   }
 
-
-
   if (empty($data_array)) {
     // this is a new rating
     $response = open_voxb_createMyDataRequest($id, $rating, $voxb_id);
@@ -129,7 +168,6 @@ function bibdk_voxb_rate_me($id, $rating) {
     $response = open_voxb_updateRating($identifier, $rating);
     //@TODO parse response to see if all went well
   }
-
 
 }
 
@@ -157,6 +195,7 @@ function bibdk_voxb_user_check() {
   }
   catch (bibdkVoxbException $e) {
     watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
+
     return FALSE;
   }
 
@@ -183,6 +222,7 @@ function bibdk_voxb_create_voxb_user() {
   }
   catch (bibdkVoxbException $e) {
     watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
+
     return FALSE;
   }
 
@@ -193,6 +233,7 @@ function bibdk_voxb_create_voxb_user() {
   }
   catch (bibdkVoxbException $e) {
     watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
+
     return FALSE;
   }
 
