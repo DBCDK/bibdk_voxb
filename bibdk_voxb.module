@@ -50,7 +50,6 @@ function bibdk_voxb_rating() {
 
   $message = t('Rate me', array(), array('context' => 'voxb'));
   $response = bibdk_voxb_get_rating($pid);
-
   if (isset($response->error)) {
     $ret = array(
       'pid' => $pid,
@@ -65,16 +64,19 @@ function bibdk_voxb_rating() {
         'object' => $response,
         'pid' => $pid,
         'title' => $message,
-       // 'review_link' => drupal_render(bibdk_voxb_review_link($pid)),
+        'review_link' => drupal_render(bibdk_voxb_review_link($pid)),
       )),
     );
   }
-
-  // return $ret['markup'];
   drupal_json_output($ret);
   exit;
 }
 
+
+/** Get a link to review given pid
+ *
+ * @param $pid; the pid to link to
+ */
 function bibdk_voxb_review_link($pid) {
   $link = array(
     '#theme' => 'link',
@@ -96,15 +98,22 @@ function bibdk_voxb_review_link($pid) {
   return $link;
 }
 
+/** Wrapper for drupal_st message - return a themed message
+ * @param $message
+ * @param $type
+ * @return string
+ */
 function bibdk_voxb_set_error($message, $type) {
-  // remove messages
   drupal_get_messages();
-  // set an appropiate message
   drupal_set_message($message, $type);
-
   return theme('status_messages');
 }
 
+/**
+ * fetch VOXB rating for given pid
+ * @param $pid
+ * @return stdObject $ret; if  an error occurred $ret->error is set; else $ret->rating, $ret->ratingCount
+ */
 function bibdk_voxb_get_rating($pid) {
   $response = open_voxb_fetchDataRequest($pid);
   // ting client return FALSE on error
@@ -127,6 +136,10 @@ function bibdk_voxb_get_rating($pid) {
   return $ret;
 }
 
+/** Ajax call to add or update a VOXB rating
+ * @param $id; the id to rate
+ * @param $rating; the rating to apply
+ */
 function bibdk_voxb_rate_me($id, $rating) {
   // we have five stars, and rating is from 1-100
   // multiply by 20

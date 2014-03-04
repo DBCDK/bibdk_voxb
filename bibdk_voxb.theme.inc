@@ -20,6 +20,7 @@ function bibdk_voxb_theme() {
             'isbn' => '',
             'pid' => '',
             'title' => '',
+          'review_link' => '',
         ),
         'template' => 'templates/bibdk_voxb-rating',
     );

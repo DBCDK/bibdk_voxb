@@ -46,6 +46,8 @@
         });
     };
 
+
+
     Drupal.voxb_settings = {
         init: function () {
             // add mouseover
