@@ -48,10 +48,6 @@ function bibdk_voxb_menu() {
 function bibdk_voxb_rating() {
   $pid = $_POST['pid'];
 
-  //return node_add('blog');
-
-  $pid = '870970-basis:27262589';
-
   $message = t('Rate me', array(), array('context' => 'voxb'));
   $response = bibdk_voxb_get_rating($pid);
 
