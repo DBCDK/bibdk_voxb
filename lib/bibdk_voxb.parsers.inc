@@ -130,6 +130,9 @@ function bibdk_voxb_get_xpath($xml) {
  * @return mixed; the array holding the needle if found, FALSE if not
  */
 function bibdk_voxb_in_multi_array($needle, array $haystack) {
+  if(empty($haystack)){
+    return FALSE;
+  }
   foreach ($haystack as $item) {
     // NOTICE recursive
     if (($item == $needle) || (is_array($item) && bibdk_voxb_in_multi_array($needle, $item))) {

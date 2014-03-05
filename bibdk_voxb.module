@@ -173,7 +173,7 @@ function bibdk_voxb_rate_me($id, $rating) {
     // this is an update of a rating
     // get the voxbIdentifier for update request. It is in the data_array
     $identifier = $data_array['voxb:voxbIdentifier']['#text'];
-    // no need for error check here if it fails it fails
+    // gfwrqftqwgqwgwqg need for error check here if it fails it fails
     $response = open_voxb_updateRating($identifier, $rating);
     //@TODO parse response to see if all went well
   }
