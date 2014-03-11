@@ -45,6 +45,10 @@ div.ajax-anim {
   margin-top: 4px;
 }
 
+.rating-count {
+    clear:both;
+}
+
 .voxb-rating .rating.star-on {
   background-image: url('../img/star-on.png');
 }
