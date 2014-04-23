@@ -6,8 +6,8 @@
 
 ?>
 <div class="voxb-details pid-<?php echo $pid; ?>">
-  <div><?php echo $object->rating;?></div>
-  <div><?php echo $object->ratingCount;?></div>
+  <!--<div><?php echo $object->rating;?></div>-->
+  <!--<div><?php echo $object->ratingCount;?></div>-->
   <div class="voxb-rating rate-enabled">
     <?php for ($i = 1; $i <= 5; $i++): ?>
     <?php $star_class = ($i*20 > $object->rating) ? 'star-off' : 'star-on';?>
@@ -18,6 +18,6 @@
     </span></p>
   </div>
   <div class="clear"></div>
-  <?php print $review_link;?>
+  <!--<?php print $review_link;?>-->
 </div>
 
