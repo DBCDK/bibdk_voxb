@@ -100,10 +100,17 @@ function bibdk_voxb_parse_fetchdata_request($xml) {
   }
 
   $query = '//voxb:averageRating';
-  $ret->rating = $xpath->query($query)->item(0)->nodeValue;
+  $nodelist = $xpath->query($query);
+  if($nodelist->length > 0){
+    $ret->rating = $nodelist->item(0)->nodeValue;
 
-  $query = '//voxb:totalNumberOfRaters';
-  $ret->ratingCount = $xpath->query($query)->item(0)->nodeValue;
+    $query = '//voxb:totalNumberOfRaters';
+    $ret->ratingCount = $xpath->query($query)->item(0)->nodeValue;
+  }
+  if(empty($ret)){
+    $ret->ratingCount=(int)0;
+    $ret->rating=(int)0;
+  }
 
   return $ret;
 }

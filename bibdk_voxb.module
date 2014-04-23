@@ -227,9 +227,14 @@ function bibdk_voxb_check_response( $response ){
   $query = '//voxb:error';
   $nodes = $xpath->query($query);
   if ( $nodes->length > 0 ){
+
     // error returned from service .. there are many - set one for user.
     // and watchdog the real error
     $error = $nodes->item(0)->nodeValue;
+    if($error == 'Could not find item' ){
+      // this is actually no error .. simply no items
+      return TRUE;
+    }
     watchdog('voxb', 'Service returned error : %error',array('%error'=>$error),WATCHDOG_ERROR);
     $message = t('service_error',array(),array('context'=>'voxb'));
     drupal_set_message($message, 'error');
