@@ -47,7 +47,7 @@ function bibdk_voxb_menu() {
  */
 function bibdk_voxb_rating() {
   $pid = $_POST['pid'];
-
+ // $pid = '870970-basis:26494028';
   $message = t('Rate me', array(), array('context' => 'voxb'));
   $response = bibdk_voxb_get_rating($pid);
   if (isset($response->error)) {
@@ -226,7 +226,7 @@ function bibdk_voxb_check_response( $response ){
   // check voxb:error
   $query = '//voxb:error';
   $nodes = $xpath->query($query);
-  if ( $nodes->length() > 0 ){
+  if ( $nodes->length > 0 ){
     // error returned from service .. there are many - set one for user.
     // and watchdog the real error
     $error = $nodes->item(0)->nodeValue;
@@ -238,7 +238,7 @@ function bibdk_voxb_check_response( $response ){
   // check for faultcode element
   $query = '//faultstring';
   $nodes = $xpath->query($query);
-  if ( $nodes->length() > 0 ){
+  if ( $nodes->length > 0 ){
     //this is probably a programming error . xml validation for request failed
     $error = $nodes->item(0)->nodeValue;
     $message = t('service_error : %error',array('%error' => $error),array('context'=>'voxb'));
