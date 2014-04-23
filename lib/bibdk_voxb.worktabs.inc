@@ -20,13 +20,11 @@ function bibdk_voxb_worktabs_items($entity) {
   }
 
   $tabs['reviews']['voxb'] = array(
-    //'title' => t('VOXB', array(), array('context' => 'voxb')),
     '#title' => array(
       '#type' => 'translatable',
       '#translate' => 'VOXB review',
     ),
 
-    //'rendered' => drupal_render($render_array),
     '#content' => $render_array,
     '#more_id' => drupal_html_id('voxb-' . $entity->id),
     '#weight' => 0,
