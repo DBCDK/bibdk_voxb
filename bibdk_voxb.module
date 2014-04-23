@@ -104,14 +104,19 @@ function bibdk_voxb_review_link($pid) {
  * @return string
  */
 function bibdk_voxb_set_error($message, $type) {
+  // unset all messages - this is an ajax thing, and we don't
+  // want a clear message for the user
   drupal_get_messages();
   drupal_set_message($message, $type);
   return theme('status_messages');
 }
 
-
+/** VERY simple pid-parser.
+ * @param $pid
+ * @param string $type
+ * @return string
+ */
 function bibdk_voxb_pid2faust($pid, $type = 'faust'){
-  //pid is 870970-basis:29399212
   // get pos of lok
   $pos = strpos($pid,'-');
   $lok =  substr($pid, 0, $pos);
@@ -144,13 +149,18 @@ function bibdk_voxb_get_rating($pid) {
 
     return $ret;
   }
-
-  try {
-    $ret = bibdk_voxb_parse_fetchdata_request($response);
+  $status = bibdk_voxb_check_response($response);
+  if($status){
+    try {
+      $ret = bibdk_voxb_parse_fetchdata_request($response);
+    }
+    catch (bibdkVoxbException $e) {
+      watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
+      $ret->error = $e->getMessage();
+    }
   }
-  catch (bibdkVoxbException $e) {
-    watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
-    $ret->error = $e->getMessage();
+  else{
+    $ret->error = theme('status_messages');
   }
 
   return $ret;
@@ -162,9 +172,6 @@ function bibdk_voxb_get_rating($pid) {
  * @param $rating; the rating to apply
  */
 function bibdk_voxb_rate_me($pid, $rating) {
- /* $pid = '870970-basis:29399212';
-  $rating = 1;*/
-
   $pid = bibdk_voxb_pid2faust($pid);
   // we have five stars, and rating is from 1-100
   // multiply by 20
@@ -186,24 +193,60 @@ function bibdk_voxb_rate_me($pid, $rating) {
 
   $data_array = array();
   if(!empty($data)){
-  // check if user has already rated this material
-  $data_array = bibdk_voxb_in_multi_array($pid, $data);
+    // check if user has already rated this material
+    $data_array = bibdk_voxb_in_multi_array($pid, $data);
   }
 
 
   if (empty($data_array)) {
     // this is a new rating
     $response = open_voxb_createMyDataRequest($pid, $rating, $voxb_id);
-    // @TODO parse response
+    // check response method logs errors if necessary
+    bibdk_voxb_check_response($response);
   }
   else {
     // this is an update of a rating
     // get the voxbIdentifier for update request. It is in the data_array
     $identifier = $data_array['voxb:voxbIdentifier']['#text'];
-    // gfwrqftqwgqwgwqg need for error check here if it fails it fails
     $response = open_voxb_updateRating($identifier, $rating);
-    //@TODO parse response to see if all went well
+    // check_response method logs errors if necessary
+    bibdk_voxb_check_response($response);
   }
+}
+
+function bibdk_voxb_check_response( $response ){
+  $dom = new DOMDocument();
+  if( @$dom->loadXML($response) === FALSE ){
+    // invalid xml .. log
+    watchdog('voxb', 'Invalid xml in response : %xml',array('%xml'=>$response),WATCHDOG_ERROR);
+    return FALSE;
+  }
+  $xpath = new DOMXPath($dom);
+  $xpath->registerNamespace('voxb','"http://oss.dbc.dk/ns/voxb');
+  // check voxb:error
+  $query = '//voxb:error';
+  $nodes = $xpath->query($query);
+  if ( $nodes->length() > 0 ){
+    // error returned from service .. there are many - set one for user.
+    // and watchdog the real error
+    $error = $nodes->item(0)->nodeValue;
+    watchdog('voxb', 'Service returned error : %error',array('%error'=>$error),WATCHDOG_ERROR);
+    $message = t('service_error',array(),array('context'=>'voxb'));
+    drupal_set_message($message, 'error');
+    return FALSE;
+  }
+  // check for faultcode element
+  $query = '//faultstring';
+  $nodes = $xpath->query($query);
+  if ( $nodes->length() > 0 ){
+    //this is probably a programming error . xml validation for request failed
+    $error = $nodes->item(0)->nodeValue;
+    $message = t('service_error : %error',array('%error' => $error),array('context'=>'voxb'));
+    drupal_set_message($message, 'error');
+    return FALSE;
+  }
+  // check is good
+  return TRUE;
 }
 
 /** Check user
@@ -236,7 +279,7 @@ function bibdk_voxb_user_check() {
 
   // check voxb_id
   if ($voxb_id === '0') {
-    //invlalid (not bound) id .. create user on voxb to get a valid is
+    //invlalid (not bound) id .. create user on voxb to get a valid id
     // @TODO errrocheck
     $voxb_id = bibdk_voxb_create_voxb_user();
   }
@@ -251,7 +294,11 @@ function bibdk_voxb_create_voxb_user() {
   global $user;
   // user is not yet bound for voxb
   // create the user on voxb
-  $xml = open_voxb_createUserRequest($user->mail);
+  $userid = bibdk_voxb_encrypt($user->mail);
+  $xml = open_voxb_createUserRequest($userid);
+
+  // check_response method logs errors if necessary
+  bibdk_voxb_check_response($xml);
   try {
     $voxb_id = bibdk_voxb_parse_create_user_response($xml);
   }
@@ -273,6 +320,14 @@ function bibdk_voxb_create_voxb_user() {
   }
 
   return $voxb_id;
+}
+
+/**
+ * @param string $mail; mailaddress of user
+ * @return string md5 encrypted $mail
+ */
+function bibdk_voxb_encrypt($mail){
+  return md5($mail);
 }
 
 
