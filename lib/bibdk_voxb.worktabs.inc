@@ -46,7 +46,6 @@ function bibdk_voxb_get_rating_container($entity) {
     '#type' => 'container',
     '#attributes' => array(
       'class' => array('bibdk_voxb_tab'),
-      //'data-isbn' => $isbn,
       'data-pid' => $pid,
     ),
   );
