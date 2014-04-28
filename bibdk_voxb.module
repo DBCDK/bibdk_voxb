@@ -47,10 +47,24 @@ function bibdk_voxb_menu() {
  */
 function bibdk_voxb_rating() {
   $pid = $_POST['pid'];
- // $pid = '870970-basis:26494028';
+  //$pid = '870970-basis:25807995';
   $message = t('Rate me', array(), array('context' => 'voxb'));
-  $response = bibdk_voxb_get_rating($pid);
-  if (isset($response->error)) {
+
+  $lid = bibdk_voxb_pid2faust($pid);
+  $response = open_voxb_fetchDataRequest($lid);
+
+  // ting client return FALSE on error
+  if ($response === FALSE) {
+    // this is probably a configuration error
+    $ret->error = t('An error occurred. Please contact administrator if problem persists', array(), array('context' => 'voxb'));
+    watchdog('voxb', 'Ting client returned FALSE - check configuration', array(), WATCHDOG_ERROR);
+    drupal_json_output($ret);
+    exit;
+
+  }
+// get ratings
+  $rating = bibdk_voxb_get_rating($response);
+  if (isset($rating->error)) {
     $ret = array(
       'pid' => $pid,
       'error' => bibdk_voxb_set_error($response->error, 'error'),
@@ -59,18 +73,32 @@ function bibdk_voxb_rating() {
   else {
     $ret = array(
       'pid' => $pid,
-      'rating' => $response,
+      'rating' => $rating,
       'markup' => theme('voxb_rating', array(
-        'object' => $response,
+        'object' => $rating,
         'pid' => $pid,
         'title' => $message,
         'review_link' => drupal_render(bibdk_voxb_review_link($pid)),
+      /* 'teasers'=>theme('voxb_teaser',array(
+          'reviews'=>$rating->reviews,
+          'date_text'=>bibdk_voxb_review_teaser_text_date(),
+          'author_text'=>bibdk_voxb_review_teaser_text_author(),
+        )),*/
       )),
     );
   }
   drupal_json_output($ret);
   exit;
 }
+
+function bibdk_voxb_review_teaser_text_date(){
+  return t('Reviewed_date',array(),array('context'=>'voxb'));
+}
+
+function bibdk_voxb_review_teaser_text_author(){
+  return t('Reviewed_by',array(),array('context'=>'voxb'));
+}
+
 
 
 /** Get a link to review given pid
@@ -137,18 +165,7 @@ function bibdk_voxb_pid2faust($pid, $type = 'faust'){
  * @param $pid
  * @return stdObject $ret; if  an error occurred $ret->error is set; else $ret->rating, $ret->ratingCount
  */
-function bibdk_voxb_get_rating($pid) {
-  $pid = bibdk_voxb_pid2faust($pid);
-
-  $response = open_voxb_fetchDataRequest($pid);
-  // ting client return FALSE on error
-  if ($response === FALSE) {
-    // this is probably a configuration error
-    $ret->error = t('An error occurred. Please contact administrator if problem persists', array(), array('context' => 'voxb'));
-    watchdog('voxb', 'Ting client returned FALSE - check configuration', array(), WATCHDOG_ERROR);
-
-    return $ret;
-  }
+function bibdk_voxb_get_rating($response) {
   $status = bibdk_voxb_check_response($response);
   if($status){
     try {
@@ -190,13 +207,11 @@ function bibdk_voxb_rate_me($pid, $rating) {
   // data holds all activity from user (review, ratings, tags etc.)
   $data = $voxbUser->userData();
 
-
   $data_array = array();
   if(!empty($data)){
     // check if user has already rated this material
     $data_array = bibdk_voxb_in_multi_array($pid, $data);
   }
-
 
   if (empty($data_array)) {
     // this is a new rating
@@ -262,14 +277,10 @@ function bibdk_voxb_check_response( $response ){
  */
 function bibdk_voxb_user_check() {
   global $user;
-
   // check if user is provider user
   if (!(ding_user_is_provider_user($user))) {
     return FALSE;
   }
-
-  // @TODO .. CACHE .. in $_SESSION ??
-
   //get the voxb_id via openuserinfo webservice
   $xml = ding_provider_invoke('user', 'get_voxb', $user->mail);
 
