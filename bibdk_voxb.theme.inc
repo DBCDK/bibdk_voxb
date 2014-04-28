@@ -13,16 +13,27 @@
  * Implements hook_theme().
  */
 function bibdk_voxb_theme() {
-    $items['voxb_rating'] = array(
-        'variables' => array(
-            'object' => NULL,
-            'display_only' => FALSE,
-            'isbn' => '',
-            'pid' => '',
-            'title' => '',
-          'review_link' => '',
-        ),
-        'template' => 'templates/bibdk_voxb-rating',
+  $items['voxb_rating'] = array(
+    'variables' => array(
+      'object' => NULL,
+      'display_only' => FALSE,
+      'isbn' => '',
+      'pid' => '',
+      'title' => '',
+      'reviews'=>'',
+      'review_link' => '',
+    ),
+    'template' => 'templates/bibdk_voxb-rating',
+  );
+
+    $items['voxb_teaser'] = array(
+      'variables'=>array(
+        'reviews'=>array(),
+        'author_text'=>'',
+        'date_text'=>'',
+        'link' => '',
+      ),
+      'template' => 'templates/bibdk_voxb-teaser',
     );
 
     return $items;
