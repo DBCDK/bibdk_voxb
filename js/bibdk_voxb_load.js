@@ -2,10 +2,12 @@
 
   Drupal.bibdkSetRating = function (voxb) {
     if (voxb.error) {
-      $('.bibdk_voxb_tab[data-pid=' + voxb.pid + ']').append(voxb.error);
+      $('.bibdk_voxb_tab[data-pid=' + voxb.pid + ']').prepend(voxb.error);
     }
     else {
       $('.bibdk_voxb_tab[data-pid=' + voxb.pid + ']').html(voxb.markup);
+      // attach behaviours to stay in context
+      Drupal.attachBehaviors($('.bibdk_voxb_tab[data-pid=' + voxb.pid + ']'));
       Drupal.voxb_settings.init(voxb);
     }
   }
