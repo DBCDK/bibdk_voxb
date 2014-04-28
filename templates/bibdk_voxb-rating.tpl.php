@@ -5,6 +5,7 @@
  */
 
 ?>
+<div>
 <div class="voxb-details pid-<?php echo $pid; ?>">
   <!--<div><?php echo $object->rating;?></div>-->
   <!--<div><?php echo $object->ratingCount;?></div>-->
@@ -17,7 +18,11 @@
         <?php echo t('Number of ratings: ',array(),array('contexb'=>'voxb')) . $object->ratingCount;?>
     </span></p>
   </div>
-  <div class="clear"></div>
+ <!-- <div class="clear"></div>-->
   <!--<?php print $review_link;?>-->
+  <?php if(!empty($teasers)):?>
+    <?php print $teasers;?>
+  <?php endif;?>
+</div>
 </div>
 
