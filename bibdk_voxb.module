@@ -9,19 +9,6 @@ module_load_include('inc', 'bibdk_voxb', 'bibdk_voxb.blog');
 function bibdk_voxb_menu() {
   $items = array();
 
-  $path = drupal_get_path('module', 'bibdk_voxb');
-
-  $items['voxb/ajax/review'] = array(
-    'title' => t('Write review', array(), array('context' => 'voxb')),
-    'type' => MENU_CALLBACK,
-    'description' => '',
-    //'access calback' => TRUE,
-    'access arguments' => array('create blog content'),
-    // 'access arguments' => array('search content'),
-    'page callback' => 'bibdk_voxb_get_review_form',
-    'file' => '/bibdk_voxb.blog.inc',
-  );
-
   $items['voxb/ajax/get_rating'] = array(
     'title' => 'VoxB rating handler',
     'description' => '',
@@ -78,52 +65,11 @@ function bibdk_voxb_rating() {
         'object' => $rating,
         'pid' => $pid,
         'title' => $message,
-        'review_link' => drupal_render(bibdk_voxb_review_link($pid)),
-      /* 'teasers'=>theme('voxb_teaser',array(
-          'reviews'=>$rating->reviews,
-          'date_text'=>bibdk_voxb_review_teaser_text_date(),
-          'author_text'=>bibdk_voxb_review_teaser_text_author(),
-        )),*/
       )),
     );
   }
   drupal_json_output($ret);
   exit;
-}
-
-function bibdk_voxb_review_teaser_text_date(){
-  return t('Reviewed_date',array(),array('context'=>'voxb'));
-}
-
-function bibdk_voxb_review_teaser_text_author(){
-  return t('Reviewed_by',array(),array('context'=>'voxb'));
-}
-
-
-
-/** Get a link to review given pid
- *
- * @param $pid; the pid to link to
- */
-function bibdk_voxb_review_link($pid) {
-  $link = array(
-    '#theme' => 'link',
-    '#text' => t('voxb_write_review', array(), array('context' => 'voxb')),
-    '#path' => 'voxb/ajax/review',
-    '#weight' => 0,
-    '#options' => array(
-      'query' => array('pid' => $pid),
-      'attributes' => array(
-        'class' => array(
-          'bibdk_review_link',
-        ),
-        'id' => drupal_html_id('bibdk_voxb_review_' . $pid),
-      ),
-      'html' => FALSE,
-    ),
-  );
-
-  return $link;
 }
 
 /** Wrapper for drupal_st message - return a themed message
@@ -159,7 +105,6 @@ function bibdk_voxb_pid2faust($pid, $type = 'faust'){
   }
 }
 
-
 /**
  * fetch VOXB rating for given pid
  * @param $pid
@@ -182,7 +127,6 @@ function bibdk_voxb_get_rating($response) {
 
   return $ret;
 }
-
 
 /** Ajax call to add or update a VOXB rating
  * @param $id; the id to rate
