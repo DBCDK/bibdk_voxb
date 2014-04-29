@@ -11,7 +11,8 @@
  * @param type $entity
  * @return type
  */
-function bibdk_voxb_worktabs_items($tabs, $entity) {
+function bibdk_voxb_worktabs_items($entity) {
+  $tabs= array();
   $render_array = bibdk_voxb_get_rating_container($entity);
 
   if ($render_array === FALSE) {
@@ -19,10 +20,14 @@ function bibdk_voxb_worktabs_items($tabs, $entity) {
   }
 
   $tabs['reviews']['voxb'] = array(
-    'title' => t('VOXB', array(), array('context' => 'voxb')),
-    'rendered' => drupal_render($render_array),
-    'more_id' => drupal_html_id('voxb-' . $entity->id),
-    'weight' => 0,
+    '#title' => array(
+      '#type' => 'translatable',
+      '#translate' => 'VOXB review',
+    ),
+
+    '#content' => $render_array,
+    '#more_id' => drupal_html_id('voxb-' . $entity->id),
+    '#weight' => 0,
   );
 
   return $tabs;
@@ -41,7 +46,6 @@ function bibdk_voxb_get_rating_container($entity) {
     '#type' => 'container',
     '#attributes' => array(
       'class' => array('bibdk_voxb_tab'),
-      //'data-isbn' => $isbn,
       'data-pid' => $pid,
     ),
   );
