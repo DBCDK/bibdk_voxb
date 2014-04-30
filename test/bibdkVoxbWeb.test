@@ -19,7 +19,7 @@ class bibdkVoxbWebTestCase extends DrupalWebTestCase {
   public function setUp() {
     module_enable(array('open_voxb_mockup'));
     menu_rebuild();
-    parent::setUp(array('bibdk_voxb', 'open_voxb', 'open_voxb_mockup', 'ting_openformat', 'worktabs'));
+    parent::setUp(array('bibdk_voxb', 'open_voxb', 'open_voxb_mockup', 'ting_openformat', 'worktabs','translatable'));
     variable_set('open_voxb_url', $this->getAbsoluteUrl('/open_voxb_mockup/'));
     variable_set('ting_search_url', $this->getAbsoluteUrl('/open_voxb_mockup/'));
     //  variable_set('ting_search_url', 'http://bibliotek.dk/openbibdk/0.8/');
@@ -42,14 +42,10 @@ class bibdkVoxbWebTestCase extends DrupalWebTestCase {
   // make a searh
   public function _testSearch() {
     debug(__FUNCTION__);
-    $this->drupalGet('search/work/dkcclterm.ib=9788791318412#full-view');
     // get a rating object
-    $isbn = '978-87-91318-41-2'; // Titus alene
-    $voxb_obj = bibdk_voxb_get_rating($isbn);
-
-    //assert that object has correct attributes
-    $this->assertTrue(isset($voxb_obj->rating), 'Rating is set');
-    $this->assertTrue(isset($voxb_obj->ratingCount), 'ratingCount is set');
+    //$isbn = '978-87-91318-41-2'; // Titus alene
+    $_POST['pid']='870970-basis:25807995';
+    $this->drupalGet('search/work/dkcclterm.ib=9788791318412#full-view');
   }
 
   public function tearDown() {
