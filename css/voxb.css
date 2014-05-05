@@ -19,6 +19,11 @@
   margin-bottom: 15px;
 }
 
+.bibdk_voxb_review .element-section{
+    margin:0;
+    padding: 0;
+}
+
 .add-review-textarea {
   width: 100%;
   height: 100px;
@@ -43,6 +48,10 @@ div.ajax-anim {
   height: 16px;
   float: left;
   margin-top: 4px;
+}
+
+.rating-count {
+    clear:both;
 }
 
 .voxb-rating .rating.star-on {

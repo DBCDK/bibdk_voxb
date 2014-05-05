@@ -18,12 +18,25 @@ function bibdk_voxb_theme() {
       'object' => NULL,
       'display_only' => FALSE,
       'isbn' => '',
+      'pid' => '',
       'title' => '',
+      'reviews'=>'',
+      'review_link' => '',
     ),
     'template' => 'templates/bibdk_voxb-rating',
   );
 
-  return $items;
+    $items['voxb_teaser'] = array(
+      'variables'=>array(
+        'reviews'=>array(),
+        'author_text'=>'',
+        'date_text'=>'',
+        'link' => '',
+      ),
+      'template' => 'templates/bibdk_voxb-teaser',
+    );
+
+    return $items;
 }
 
 /**
@@ -42,6 +55,6 @@ function bibdk_voxb_theme() {
   // $variables['rating_block_class'] = implode(' ', $rating_block_class);
   $variables['star_class'] = implode(' ', $star_class);
 }*/
-?>
+
 
 
