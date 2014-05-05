@@ -2,7 +2,7 @@ name = VoxB module
 description = Implementation of VoxB for bibliotek.dk.
 core = 7.x
 package = bibliotek.dk
-version = 7.x-1.0
+version = 7.x-0.1
 project = bibdk_voxb
 
 ; class definitions
