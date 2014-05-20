@@ -6,6 +6,8 @@
  * Time: 12:37 PM
  */
 
+require_once('bibdk_voxb.node.inc');
+
 /** Parse response from OUI::bindVoxbRequest
  * @param $xml
  * @return bool|string
@@ -20,6 +22,25 @@ function bibdk_voxb_parse_bind_voxb_response($xml) {
   }
 
   $query = '//oui:userId';
+  $nodelist = $xp->query($query);
+  if ($nodelist->length != 1) {
+    // something is wrong
+    return FALSE;
+  }
+
+  return $nodelist->item(0)->nodeValue;
+}
+
+function bibdk_voxb_parse_update_data_response($xml){
+   try {
+    $xp = bibdk_voxb_get_xpath($xml);
+  }
+  catch (bibdkVoxbException $e) {
+    // rethrow
+    throw $e;
+  }
+
+  $query = '//voxb:voxbIdentifier';
   $nodelist = $xp->query($query);
   if ($nodelist->length != 1) {
     // something is wrong
@@ -165,12 +186,23 @@ function bibdk_voxb_set_review($node){
     $rev->alias = $node->getElementsByTagName('aliasName')->item(0)->nodeValue;
     $rev->profileLink = $node->getElementsByTagName('profileLink')->item(0)->nodeValue;
     $rev->Title = $node->getElementsByTagName('reviewTitle')->item(0)->nodeValue;
-    $rev->reviewData = $node->getElementsByTagName('reviewData')->item(0)->nodeValue;
+
     $rev->date = $node->getElementsByTagName('timestampModified')->item(0)->nodeValue;
 
     $identifier = $node->getElementsByTagName('voxbIdentifier')->item(0)->nodeValue;
+    $rev->voxb_identifier = $identifier;
     $rev->link = bibdk_voxb_review_teaser_link($identifier);
+
+
+
     $rev->teaser = bibdk_voxb_make_review_teaser($rev->reviewData);
+    //$rev->reviewData = $node->getElementsByTagName('reviewData')->item(0)->nodeValue;
+   $rev->reviewData = drupal_render(bibdk_voxb_blog_node_view($rev->voxb_identifer));
+
+
+    //@TODO pass rev to bibdk_voxb.node.inc to create or get existing/new node
+   // $rev->htmlHEST = bibdk_voxb_node_create($rev);
+   // $rev->htmlHEST = bibdk_voxb_voxbnode_view($rev->voxb_identifer);
 
     return $rev;
   }
@@ -193,6 +225,11 @@ function bibdk_voxb_make_review_teaser($reviewTxt){
   $teaser = substr($reviewTxt,0,100);
   $teaser .= ' ... ';
   return $teaser;
+}
+
+function bibdk_voxb_parser_parse_createReview($xml){
+  $xpath =  bibdk_voxb_get_xpath($xml);
+  return '1234';
 }
 
 /** Initialize an xpath object from given xml

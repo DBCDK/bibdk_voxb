@@ -2,14 +2,17 @@
 module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.worktabs');
 module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.parsers');
 module_load_include('inc', 'bibdk_voxb', 'bibdk_voxb.theme');
-module_load_include('inc', 'bibdk_voxb', 'bibdk_voxb.blog');
+
+//module_load_include('inc', 'bibdk_voxb', 'bibdk_voxb.blog');
+
+module_load_include('inc',' bibdk_voxb', 'lib/bibdk_voxb.node');
+module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.review');
+
 /** Implements hook_menu
  *
  */
 function bibdk_voxb_menu() {
   $items = array();
-
-  $path = drupal_get_path('module', 'bibdk_voxb');
 
   $items['voxb/ajax/review'] = array(
     'title' => t('Write review', array(), array('context' => 'voxb')),
@@ -19,7 +22,7 @@ function bibdk_voxb_menu() {
     'access arguments' => array('create blog content'),
     // 'access arguments' => array('search content'),
     'page callback' => 'bibdk_voxb_get_review_form',
-    'file' => '/bibdk_voxb.blog.inc',
+    'file' => '/bibdk_voxb.review.inc',
   );
 
   $items['voxb/ajax/get_rating'] = array(
@@ -46,8 +49,8 @@ function bibdk_voxb_menu() {
  *
  */
 function bibdk_voxb_rating() {
-  $pid = $_POST['pid'];
-  //$pid = '870970-basis:25807995';
+ $pid = $_POST['pid'];
+ // $pid = '870970-basis:25807995';
   $message = t('Rate me', array(), array('context' => 'voxb'));
 
   $lid = bibdk_voxb_pid2faust($pid);
@@ -79,7 +82,7 @@ function bibdk_voxb_rating() {
         'pid' => $pid,
         'title' => $message,
         'review_link' => drupal_render(bibdk_voxb_review_link($pid)),
-      /* 'teasers'=>theme('voxb_teaser',array(
+       /* 'teasers'=>theme('voxb_teaser',array(
           'reviews'=>$rating->reviews,
           'date_text'=>bibdk_voxb_review_teaser_text_date(),
           'author_text'=>bibdk_voxb_review_teaser_text_author(),
@@ -202,18 +205,8 @@ function bibdk_voxb_rate_me($pid, $rating) {
     exit;
   }
 
-  // init a userobject to handle user data
-  $voxbUser = new bibdkVoxbUser($voxb_id);
-  // data holds all activity from user (review, ratings, tags etc.)
-  $data = $voxbUser->userData();
-
-  $data_array = array();
-  if(!empty($data)){
-    // check if user has already rated this material
-    $data_array = bibdk_voxb_in_multi_array($pid, $data);
-  }
-
-  if (empty($data_array)) {
+  $user_data= bibdk_voxb_get_user_item($pid, $voxb_id);
+  if (empty($user_data)) {
     // this is a new rating
     $response = open_voxb_createMyDataRequest($pid, $rating, $voxb_id);
     // check response method logs errors if necessary
@@ -221,12 +214,27 @@ function bibdk_voxb_rate_me($pid, $rating) {
   }
   else {
     // this is an update of a rating
-    // get the voxbIdentifier for update request. It is in the data_array
-    $identifier = $data_array['voxb:voxbIdentifier']['#text'];
+    // get the voxbIdentifier for update request. It is in the user_data array
+    $identifier = $user_data['voxb:voxbIdentifier']['#text'];
     $response = open_voxb_updateRating($identifier, $rating);
     // check_response method logs errors if necessary
     bibdk_voxb_check_response($response);
   }
+}
+
+function bibdk_voxb_get_user_item($pid, $voxb_id){
+  // init a userobject to handle user data
+  $voxbUser = new bibdkVoxbUser($voxb_id);
+  // data holds all activity from user (review, ratings, tags etc.)
+  $data = $voxbUser->userData();
+
+  $user_data = array();
+  if(!empty($data)){
+    // check if user has already rated this material
+
+    $user_data = bibdk_voxb_in_multi_array($pid, $data);
+  }
+  return $user_data;
 }
 
 function bibdk_voxb_check_response( $response ){
@@ -275,7 +283,7 @@ function bibdk_voxb_check_response( $response ){
  *      a. if not - create user
  * @return bool|string; FALSE if something is wrong, else voxb_id
  */
-function bibdk_voxb_user_check() {
+function bibdk_voxb_user_check($type='rating') {
   global $user;
   // check if user is provider user
   if (!(ding_user_is_provider_user($user))) {
@@ -289,10 +297,10 @@ function bibdk_voxb_user_check() {
   }
   catch (bibdkVoxbException $e) {
     watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
-
     return FALSE;
   }
 
+  // @TODO check on $type paramater. if not rating get the accept page
   // check voxb_id
   if ($voxb_id === '0') {
     //invlalid (not bound) id .. create user on voxb to get a valid id
@@ -300,6 +308,7 @@ function bibdk_voxb_user_check() {
     $voxb_id = bibdk_voxb_create_voxb_user();
   }
 
+  dpm($voxb_id);
   return $voxb_id;
 }
 

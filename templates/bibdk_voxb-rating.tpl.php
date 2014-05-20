@@ -19,7 +19,7 @@
     </span></p>
   </div>
  <!-- <div class="clear"></div>-->
-  <!--<?php print $review_link;?>-->
+  <?php print $review_link;?>
   <?php if(!empty($teasers)):?>
     <?php print $teasers;?>
   <?php endif;?>
