@@ -122,7 +122,7 @@ function bibdk_voxb_parse_fetchdata_request($xml) {
   // parse for reatings
   $ret = bibdk_voxb_set_ratings($xpath);
   // parse for reviews
-  $reviews = bibdk_voxb_set_reviews($xpath);
+  //$reviews = bibdk_voxb_set_reviews($xpath);
   if(!empty($reviews)){
     $ret->reviews = $reviews;
   }

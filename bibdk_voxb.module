@@ -50,7 +50,7 @@ function bibdk_voxb_menu() {
  */
 function bibdk_voxb_rating() {
  $pid = $_POST['pid'];
- // $pid = '870970-basis:25807995';
+//  $pid = '870970-basis:25807995';
   $message = t('Rate me', array(), array('context' => 'voxb'));
 
   $lid = bibdk_voxb_pid2faust($pid);
@@ -81,7 +81,7 @@ function bibdk_voxb_rating() {
         'object' => $rating,
         'pid' => $pid,
         'title' => $message,
-        'review_link' => drupal_render(bibdk_voxb_review_link($pid)),
+       // 'review_link' => drupal_render(bibdk_voxb_review_link($pid)),
        /* 'teasers'=>theme('voxb_teaser',array(
           'reviews'=>$rating->reviews,
           'date_text'=>bibdk_voxb_review_teaser_text_date(),
@@ -308,7 +308,22 @@ function bibdk_voxb_user_check($type='rating') {
     $voxb_id = bibdk_voxb_create_voxb_user();
   }
 
-  dpm($voxb_id);
+ // dpm($voxb_id);
+  return $voxb_id;
+}
+
+function bibdk_voxb_get_user_by_fingerprint(){
+  global $user;
+  $userid = bibdk_voxb_encrypt($user->mail);
+  $xml = open_voxb_fetchUserByFingerPrint($userid);
+  try {
+    $voxb_id = bibdk_voxb_parse_create_user_response($xml);
+  }
+  catch (bibdkVoxbException $e) {
+    watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
+    return FALSE;
+  }
+
   return $voxb_id;
 }
 
@@ -329,7 +344,17 @@ function bibdk_voxb_create_voxb_user() {
   }
   catch (bibdkVoxbException $e) {
     watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
+    return FALSE;
+  }
 
+  // service didn't return expected result.
+  // maybe user already exists on voxb. Try to get him by fingerprint
+  if($voxb_id === FALSE){
+    $voxb_id = bibdk_voxb_get_user_by_fingerprint();
+  }
+
+  if($voxb_id === FALSE){
+    // give up
     return FALSE;
   }
 
@@ -340,7 +365,6 @@ function bibdk_voxb_create_voxb_user() {
   }
   catch (bibdkVoxbException $e) {
     watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
-
     return FALSE;
   }
 
