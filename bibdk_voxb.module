@@ -2,9 +2,6 @@
 module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.worktabs');
 module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.parsers');
 module_load_include('inc', 'bibdk_voxb', 'bibdk_voxb.theme');
-
-//module_load_include('inc', 'bibdk_voxb', 'bibdk_voxb.blog');
-
 module_load_include('inc',' bibdk_voxb', 'lib/bibdk_voxb.node');
 module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.review');
 
@@ -50,7 +47,7 @@ function bibdk_voxb_menu() {
  */
 function bibdk_voxb_rating() {
  $pid = $_POST['pid'];
-//  $pid = '870970-basis:25807995';
+ //$pid = '870970-basis:25807995';
   $message = t('Rate me', array(), array('context' => 'voxb'));
 
   $lid = bibdk_voxb_pid2faust($pid);
@@ -62,11 +59,12 @@ function bibdk_voxb_rating() {
     $ret->error = t('An error occurred. Please contact administrator if problem persists', array(), array('context' => 'voxb'));
     watchdog('voxb', 'Ting client returned FALSE - check configuration', array(), WATCHDOG_ERROR);
     drupal_json_output($ret);
-    exit;
+    drupal_exit();
 
   }
 // get ratings
   $rating = bibdk_voxb_get_rating($response);
+
   if (isset($rating->error)) {
     $ret = array(
       'pid' => $pid,
@@ -81,17 +79,19 @@ function bibdk_voxb_rating() {
         'object' => $rating,
         'pid' => $pid,
         'title' => $message,
-       // 'review_link' => drupal_render(bibdk_voxb_review_link($pid)),
-       /* 'teasers'=>theme('voxb_teaser',array(
+        'review_link' => drupal_render(bibdk_voxb_review_link($pid)),
+        'teasers'=>theme('voxb_teaser',array(
           'reviews'=>$rating->reviews,
           'date_text'=>bibdk_voxb_review_teaser_text_date(),
           'author_text'=>bibdk_voxb_review_teaser_text_author(),
-        )),*/
+        )),
       )),
     );
   }
+
+
   drupal_json_output($ret);
-  exit;
+  drupal_exit();
 }
 
 function bibdk_voxb_review_teaser_text_date(){
@@ -206,6 +206,7 @@ function bibdk_voxb_rate_me($pid, $rating) {
   }
 
   $user_data= bibdk_voxb_get_user_item($pid, $voxb_id);
+
   if (empty($user_data)) {
     // this is a new rating
     $response = open_voxb_createMyDataRequest($pid, $rating, $voxb_id);
@@ -231,7 +232,6 @@ function bibdk_voxb_get_user_item($pid, $voxb_id){
   $user_data = array();
   if(!empty($data)){
     // check if user has already rated this material
-
     $user_data = bibdk_voxb_in_multi_array($pid, $data);
   }
   return $user_data;
@@ -308,7 +308,6 @@ function bibdk_voxb_user_check($type='rating') {
     $voxb_id = bibdk_voxb_create_voxb_user();
   }
 
- // dpm($voxb_id);
   return $voxb_id;
 }
 
