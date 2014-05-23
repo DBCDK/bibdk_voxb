@@ -22,7 +22,8 @@
     </div>
   </div>
   <div class="element-section visuallyhidden">
-    <?php print $review->reviewData;?>
+    <!--<?php print $review->reviewData;?>-->
+    <?php print $review->markup;?>
   </div>
 
   <span class="icon icon-left icon-darkgrey-infomedia">
