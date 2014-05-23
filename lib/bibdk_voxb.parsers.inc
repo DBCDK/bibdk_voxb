@@ -122,7 +122,7 @@ function bibdk_voxb_parse_fetchdata_request($xml) {
   // parse for reatings
   $ret = bibdk_voxb_set_ratings($xpath);
   // parse for reviews
-  //$reviews = bibdk_voxb_set_reviews($xpath);
+  $reviews = bibdk_voxb_set_reviews($xpath);
   if(!empty($reviews)){
     $ret->reviews = $reviews;
   }
@@ -156,7 +156,7 @@ function bibdk_voxb_set_ratings($xpath){
  * @return array [stdObject]
  */
 function bibdk_voxb_set_reviews($xpath){
-  // parse for reviews
+   // parse for reviews
   $reviews = array();
   $query = '//voxb:userItems';
   $nodelist = $xpath->query($query);
@@ -186,23 +186,22 @@ function bibdk_voxb_set_review($node){
     $rev->alias = $node->getElementsByTagName('aliasName')->item(0)->nodeValue;
     $rev->profileLink = $node->getElementsByTagName('profileLink')->item(0)->nodeValue;
     $rev->Title = $node->getElementsByTagName('reviewTitle')->item(0)->nodeValue;
-
     $rev->date = $node->getElementsByTagName('timestampModified')->item(0)->nodeValue;
-
     $identifier = $node->getElementsByTagName('voxbIdentifier')->item(0)->nodeValue;
     $rev->voxb_identifier = $identifier;
     $rev->link = bibdk_voxb_review_teaser_link($identifier);
-
-
-
+    //$rev->reviewData = nl2br($node->getElementsByTagName('reviewData')->item(0)->nodeValue);
+    $rev->reviewData = $node->getElementsByTagName('reviewData')->item(0)->nodeValue;
     $rev->teaser = bibdk_voxb_make_review_teaser($rev->reviewData);
-    //$rev->reviewData = $node->getElementsByTagName('reviewData')->item(0)->nodeValue;
-   $rev->reviewData = drupal_render(bibdk_voxb_blog_node_view($rev->voxb_identifer));
 
-
-    //@TODO pass rev to bibdk_voxb.node.inc to create or get existing/new node
-   // $rev->htmlHEST = bibdk_voxb_node_create($rev);
-   // $rev->htmlHEST = bibdk_voxb_voxbnode_view($rev->voxb_identifer);
+    $blog_node = bibdk_voxb_blog_fetch_blog_node($identifier);
+    // for now delete the node ..
+    bibdk_voxb_blog_node_delete($blog_node);
+    // and create it again
+   if(empty($blog_node)){
+      $blog_node = bibdk_voxb_blog_node_create($rev);
+    }
+    $rev->markup = bibdk_voxb_blog_node_view($blog_node);
 
     return $rev;
   }
