@@ -18,11 +18,13 @@
         <?php echo t('Number of ratings: ',array(),array('contexb'=>'voxb')) . $object->ratingCount;?>
     </span></p>
   </div>
+  <div class="bibdk-article-review clearfix"></div>
  <!-- <div class="clear"></div>-->
   <?php print $review_link;?>
   <?php if(!empty($teasers)):?>
     <?php print $teasers;?>
   <?php endif;?>
 </div>
+
 </div>
 
