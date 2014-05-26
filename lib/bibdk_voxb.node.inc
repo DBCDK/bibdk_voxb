@@ -16,7 +16,7 @@ function bibdk_voxb_blog_fetch_blog_node($voxb_identifier){
   $query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'blog')
     ->propertyCondition('status', 1)
-    ->fieldCondition('field_voxb_id', 'value', $voxb_identitfier, '=');
+    ->fieldCondition('field_voxb_id', 'value', $voxb_identifier, '=');
 
   $result = $query->execute();
   if(isset($result['node'])){
@@ -46,6 +46,16 @@ function bibdk_voxb_blog_node_delete($node){
 function bibdk_voxb_blog_node_view($blog_node){
   return drupal_render(node_view($blog_node,'full'));
 }
+
+/** Implements hook_node_view
+ * unset user links for now
+ */
+function bibdk_voxb_node_view($node, $view_mode, $langcode){
+  if ($node->type == 'blog'){
+    unset($node->content['links']['blog']);
+  }
+}
+
 
 /** Function to create a node (blog) based on the response from voxb
  * @param $revew. A voxb review
@@ -82,5 +92,4 @@ function bibdk_voxb_blog_node_create($review) {
  *
  */
 function bibdk_voxb_node_load($nodes, $types){
-
 }
