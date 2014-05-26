@@ -1,0 +1,28 @@
+<?php
+/**
+ * Created by IntelliJ IDEA.
+ * User: pjo
+ * Date: 5/26/14
+ * Time: 12:24 PM
+ */
+
+/** Implements hook_install
+ *
+ */
+function bibdk_voxb_install() {
+  _bibdk_voxb_increase_module_weight();
+}
+
+/** Increase weight of voxb module. It alters the blog_node view, and thus
+ * must be called AFTER blog module
+ *
+ */
+function _bibdk_voxb_increase_module_weight() {
+  db_update('system')
+    ->fields(array(
+      'weight' => 10,
+    ))
+    ->condition('type', 'module')
+    ->condition('name', 'bibdk_voxb')
+    ->execute();
+}
