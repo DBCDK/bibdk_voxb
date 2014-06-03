@@ -11,6 +11,7 @@
  */
 function bibdk_voxb_install() {
   _bibdk_voxb_increase_module_weight();
+  _bibdk_voxb_enable_features();
 }
 
 /** Increase weight of voxb module. It alters the blog_node view, and thus
@@ -25,4 +26,18 @@ function _bibdk_voxb_increase_module_weight() {
     ->condition('type', 'module')
     ->condition('name', 'bibdk_voxb')
     ->execute();
+}
+
+/** enable module(s) that define blog-features
+ *
+ */
+function _bibdk_voxb_enable_features(){
+  module_enable(array('bibdk_voxb_blog_fields'));
+}
+
+/** Implements hook_update_N
+ *
+ */
+function bibdk_voxb_update_10(){
+  module_enable(array('bibdk_voxb_blog_fields'));
 }
