@@ -15,10 +15,6 @@ function bibdk_voxb_worktabs_items($entity) {
   $tabs= array();
   $render_array = bibdk_voxb_get_rating_container($entity);
 
-  if ($render_array === FALSE) {
-    return;
-  }
-
   $tabs['reviews']['voxb'] = array(
     '#title' => array(
       '#type' => 'translatable',
