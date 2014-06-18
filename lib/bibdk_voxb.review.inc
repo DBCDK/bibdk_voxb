@@ -41,7 +41,8 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
     }
   }
   // hide voxb_id field
- // $form['field_voxb_id']['#type'] = 'hidden';
+  $form['field_voxb_id']['#type'] = 'hidden';
+  $form['field_voxb_alias']['#type'] = 'hidden';
   // add custom validation method
   $form['#validate'][] = 'bibdk_voxb_review_validate';
 }

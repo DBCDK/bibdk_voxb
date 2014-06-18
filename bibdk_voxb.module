@@ -15,11 +15,12 @@ function bibdk_voxb_menu() {
     'title' => t('Write review', array(), array('context' => 'voxb')),
     'type' => MENU_CALLBACK,
     'description' => '',
-    //'access calback' => TRUE,
+    'access callback' => 'bibdk_voxb_user_review_access',
+    //'access arguments' => array('access arguments'),
     'access arguments' => array('create blog content'),
     // 'access arguments' => array('search content'),
     'page callback' => 'bibdk_voxb_get_review_form',
-    'file' => '/bibdk_voxb.review.inc',
+    'file' => 'lib/bibdk_voxb.review.inc',
   );
 
   $items['voxb/ajax/get_rating'] = array(
@@ -40,6 +41,12 @@ function bibdk_voxb_menu() {
   );
 
   return $items;
+}
+
+function bibdk_voxb_user_review_access($perm){
+  global $user;
+  $ret = ding_user_is_provider_user($user);
+  return $ret;
 }
 
 /** Ajax call-back to get rating for PID given in $_POST
@@ -79,7 +86,7 @@ function bibdk_voxb_rating() {
         'object' => $rating,
         'pid' => $pid,
         'title' => $message,
-        //'review_link' => drupal_render(bibdk_voxb_review_link($pid)),
+        'review_link' => drupal_render(bibdk_voxb_review_link($pid)),
         'teasers'=>theme('voxb_teaser',array(
           'reviews'=>$rating->reviews,
           'date_text'=>bibdk_voxb_review_teaser_text_date(),
@@ -108,7 +115,12 @@ function bibdk_voxb_review_teaser_text_author(){
  *
  * @param $pid; the pid to link to
  */
-function bibdk_voxb_review_link($pid) {
+function  bibdk_voxb_review_link($pid) {
+  global $user;
+  if(!ding_user_is_provider_user($user)){
+    return array();
+  }
+
   $link = array(
     '#theme' => 'link',
     '#text' => t('voxb_write_review', array(), array('context' => 'voxb')),
@@ -283,7 +295,7 @@ function bibdk_voxb_check_response( $response ){
  *      a. if not - create user
  * @return bool|string; FALSE if something is wrong, else voxb_id
  */
-function bibdk_voxb_user_check($type='rating') {
+  function bibdk_voxb_user_check($type='rating') {
   global $user;
   // check if user is provider user
   if (!(ding_user_is_provider_user($user))) {

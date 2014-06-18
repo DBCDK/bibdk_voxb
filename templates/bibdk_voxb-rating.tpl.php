@@ -5,7 +5,6 @@
  */
 
 ?>
-<div>
 <div class="voxb-details pid-<?php echo $pid; ?>">
   <!--<div><?php echo $object->rating;?></div>-->
   <!--<div><?php echo $object->ratingCount;?></div>-->
@@ -17,14 +16,20 @@
     <p class="rating-count left"><span>
         <?php echo t('Number of ratings: ',array(),array('contexb'=>'voxb')) . $object->ratingCount;?>
     </span></p>
+
+    <!-- <span class="icon icon-left icon-darkgrey-infomedia">-->
+  <span>
+  <?php print $review_link;?>
+  </span>
+
   </div>
   <div class="bibdk-article-review clearfix"></div>
  <!-- <div class="clear"></div>-->
-  <?php print $review_link;?>
+
   <?php if(!empty($teasers)):?>
     <?php print $teasers;?>
   <?php endif;?>
 </div>
 
-</div>
+
 

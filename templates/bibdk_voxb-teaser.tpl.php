@@ -25,11 +25,6 @@
     <?php print $review->markup;?>
   </div>
 
-  <span class="icon icon-left icon-darkgrey-infomedia">
-  <!--<?php print $review->link;?>-->
-  </span>
-
-
   <?php endforeach;?>
 </div>
 <div class="bibdk-article-review clearfix">

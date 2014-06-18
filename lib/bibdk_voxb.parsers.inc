@@ -162,7 +162,7 @@ function bibdk_voxb_set_reviews($xpath){
   $nodelist = $xpath->query($query);
   if($nodelist->length > 0){
     foreach($nodelist as $node){
-      $review = bibdk_voxb_set_review($node);
+      $review = bibdk_voxb_get_review($node);
       if(!empty($review)){
         $reviews[] = $review;
       }
@@ -171,41 +171,43 @@ function bibdk_voxb_set_reviews($xpath){
   return $reviews;
 }
 
-/** Parse for review. given node is an userItem which may or
- *  may not hold a review
+/**
+ * @param $node; a node holding user-items from voxb (ratings, reviews ..)
+ */
+function bibdk_voxb_get_review($node){
+  $is_review = $node->getElementsByTagName('review');
+  if( $is_review->length > 0){
+    $review = bibdk_voxb_set_review($node);
+    // try to get the blog from drupal
+    $blog_node = bibdk_voxb_blog_fetch_blog_node($review->voxb_identifier);
+    if(empty($blog_node)){
+      $blog_node = bibdk_voxb_blog_node_create($review);
+    }
+
+    $review->markup = bibdk_voxb_blog_node_view($blog_node);
+    return $review;
+  }
+}
+
+/** Parse for review. given node is an userItem which holds a review
  * @param $node
  * @return stdObject ->alias ->profileLink ->Title ->reviewData ->date
  *
- * @TODO Load review as blog-node ??
- *
- *
  */
 function bibdk_voxb_set_review($node){
-  $review = $node->getElementsByTagName('review');
-  if( $review->length > 0){
-    $rev->alias = $node->getElementsByTagName('aliasName')->item(0)->nodeValue;
-    $rev->profileLink = $node->getElementsByTagName('profileLink')->item(0)->nodeValue;
-    $rev->Title = $node->getElementsByTagName('reviewTitle')->item(0)->nodeValue;
-    $rev->date = $node->getElementsByTagName('timestampModified')->item(0)->nodeValue;
-    $identifier = $node->getElementsByTagName('voxbIdentifier')->item(0)->nodeValue;
-    $rev->voxb_identifier = $identifier;
-    $rev->link = bibdk_voxb_review_teaser_link($identifier);
-    //$rev->reviewData = nl2br($node->getElementsByTagName('reviewData')->item(0)->nodeValue);
-    $rev->reviewData = $node->getElementsByTagName('reviewData')->item(0)->nodeValue;
-    $rev->teaser = bibdk_voxb_make_review_teaser($rev->reviewData);
+  $rev->alias = $node->getElementsByTagName('aliasName')->item(0)->nodeValue;
+  $rev->profileLink = $node->getElementsByTagName('profileLink')->item(0)->nodeValue;
+  $rev->Title = $node->getElementsByTagName('reviewTitle')->item(0)->nodeValue;
+  $rev->date = $node->getElementsByTagName('timestampModified')->item(0)->nodeValue;
+  $identifier = $node->getElementsByTagName('voxbIdentifier')->item(0)->nodeValue;
+  $rev->voxb_identifier = $identifier;
+  $rev->link = bibdk_voxb_review_teaser_link($identifier);
+  //$rev->reviewData = nl2br($node->getElementsByTagName('reviewData')->item(0)->nodeValue);
+  $rev->reviewData = $node->getElementsByTagName('reviewData')->item(0)->nodeValue;
+  $rev->teaser = bibdk_voxb_make_review_teaser($rev->reviewData);
 
-    $blog_node = bibdk_voxb_blog_fetch_blog_node($identifier);
-    // for now delete the node ..
-    bibdk_voxb_blog_node_delete($blog_node);
-    // and create it again
-   if(empty($blog_node)){
-      $blog_node = bibdk_voxb_blog_node_create($rev);
-    }
-    $rev->markup = bibdk_voxb_blog_node_view($blog_node);
+  return $rev;
 
-    return $rev;
-  }
-  return FALSE;
 }
 
 function bibdk_voxb_review_teaser_link($identifier){

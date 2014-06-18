@@ -51,31 +51,35 @@ function bibdk_voxb_blog_node_view($blog_node){
  * unset user links for now
  */
 function bibdk_voxb_node_view($node, $view_mode, $langcode){
-  if ($node->type == 'blog'){
-    unset($node->content['links']['blog']);
-  }
+ /* if ($node->type == 'blog'){
+    unset($node->content['links']);
+  }*/
+
 }
 
 
 /** Function to create a node (blog) based on the response from voxb
- * @param $revew. A voxb review
+ *  blog node is created with uid = 0 (anonymous user). blog node is saved
+ *  with the alias given from voxb (mandatory). Alias will be used to filter
+ *  blog-nodes.
+ *
+ * @param stdObj $revew. A voxb review
  */
 
 function bibdk_voxb_blog_node_create($review) {
-  // @TODO make sure user is logged in
-  global $user;
-
   $node = new stdClass();
   $node->title = $review->title;
   $node->type = "blog";
   node_object_prepare($node); // Sets some defaults. Invokes hook_prepare() and hook_node_prepare().
   $node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
-  $node->uid = $user->uid;
+  // user anonymous user
+  $node->uid = 0;
   $node->status = 1; //(1 or 0): published or not
   $node->promote = 0; //(1 or 0): promoted to front page
   $node->comment = 1; // 0 = comments disabled, 1 = read only, 2 = read/write
 
   $node->field_voxb_id[$node->language][0]['value'] = $review->voxb_identifier;
+  $node->field_voxb_alias[$node->language][0]['value'] = $review->alias;
   $node->body[$node->language][0]['value'] = $review->reviewData;
   $node = node_submit($node); // Prepare node for saving
   node_save($node);
