@@ -57,7 +57,6 @@ function bibdk_voxb_node_view($node, $view_mode, $langcode){
 
 }
 
-
 /** Function to create a node (blog) based on the response from voxb
  *  blog node is created with uid = 0 (anonymous user). blog node is saved
  *  with the alias given from voxb (mandatory). Alias will be used to filter
@@ -66,29 +65,79 @@ function bibdk_voxb_node_view($node, $view_mode, $langcode){
  * @param stdObj $revew. A voxb review
  */
 
-function bibdk_voxb_blog_node_create($review) {
+function bibdk_voxb_blog_node_create($review=NULL) {
+  if(empty($review)){
+    $review = new stdClass();
+  }
   $node = new stdClass();
-  $node->title = $review->title;
+  $node->title = isset($review->title) ? $review->title : '';
   $node->type = "blog";
   node_object_prepare($node); // Sets some defaults. Invokes hook_prepare() and hook_node_prepare().
   $node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
   // user anonymous user
-  $node->uid = 0;
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  // get a userid
+  if(!empty($review->voxb_userid)){
+    $userid = bibdk_voxb_node_invoke_user_hook($review->voxb_userid);
+
+    dpm($userid);
+
+    $account = user_load_by_mail($userid);
+    $uid = $account->uid;
+  }
+  elseif(ding_user_is_provider_user()){
+    global $user;
+    $uid = $user->uid;
+    $voxb_id = bibdk_voxb_user_check();
+    if(!empty($voxb_id)){
+      $review->voxb_userid = $voxb_id;
+    }
+  }
+  else{
+    // anonymous user
+    $uid = 0;
+  }
+
+  $node->uid = $uid;
   $node->status = 1; //(1 or 0): published or not
   $node->promote = 0; //(1 or 0): promoted to front page
   $node->comment = 1; // 0 = comments disabled, 1 = read only, 2 = read/write
 
-  $node->field_voxb_id[$node->language][0]['value'] = $review->voxb_identifier;
-  $node->field_voxb_alias[$node->language][0]['value'] = $review->alias;
-  $node->body[$node->language][0]['value'] = $review->reviewData;
-  $node = node_submit($node); // Prepare node for saving
-  node_save($node);
-
-  // check if node has been saved correctly
-  if(isset($node->nid)){
-    return $node;
+  if(isset($review->voxb_identifier)){
+    $wrapper->field_voxb_id->set($review->voxb_identifier);
   }
+  if(isset($review->alias)){
+    $wrapper->field_voxb_alias->set($review->alias);
+  }
+  // $node->body[$node->language][0]['value'] = $review->reviewData;
+  if(isset($review->reviewData)){
+    $wrapper->body->set(array('value'=>$review->reviewData));
+  }
+
+ // $node = node_submit($node); // Prepare node for saving
+ // node_save($node);
+  //$id = $wrapper->field_voxb_id->get();
+  //dpm($id);
+  // check if node has been saved correctly
+  //if(isset($node->nid)){
+    return $node;
+  //}
+
   return FALSE;
+}
+
+/** see if anyone delivers a valid userid for given voxb_user_id
+ * @param $voxb_user_id
+ */
+function bibdk_voxb_node_invoke_user_hook($voxb_user_id){
+  $userid = module_invoke_all('user_id_from_voxb_id', $voxb_user_id);
+  if(empty($userid)){
+    return 0;
+  }
+
+  return $userid[0];
 }
 
 /** Use this function to add additional parameters to node e.g tags from

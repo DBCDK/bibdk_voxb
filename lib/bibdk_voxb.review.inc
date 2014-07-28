@@ -18,8 +18,18 @@ function bibdk_voxb_review_add_node($type = 'blog') {
   if (!function_exists("node_add")) {
     include_once(drupal_get_path('module', 'node') . '/node.pages.inc');
   }
-  // node_add wraps drupal_get_form ($type_node_form).
+  // node_add wraps drupal_get_form ($type_node_form)
   $form = node_add($type);
+  drupal_set_title(t('voxb_add_review'),array(),array('context'=>'bibdk_voxb'));
+  return $form;
+}
+
+function bibdk_voxb_review_edit_node($blog_node){
+  drupal_set_title(t('voxb_edit_review'),array(),array('context'=>'bibdk_voxb'));
+  if (!function_exists("node_form")) {
+    include_once(drupal_get_path('module', 'node') . '/node.pages.inc');
+  }
+  $form = drupal_get_form('blog_node_form', $blog_node);
   return $form;
 }
 
@@ -31,20 +41,10 @@ function bibdk_voxb_review_add_node($type = 'blog') {
  */
 function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
   $pid = bibdk_voxb_review_check_pid();
-  $user_data = bibdk_voxb_check_voxb_review($pid, $form);
-  if(isset($form['#voxb_id'])){
-    // @TODO update node, populate form
-
-    if(isset($user_data['voxb:item']['voxb:review'])){
-      // populate form with review data
-
-    }
+  if(!empty($pid)){
+    $user_data = bibdk_voxb_check_voxb_review($pid, $form);
+    $form['#validate'][] = 'bibdk_voxb_review_validate';
   }
-  // hide voxb_id field
-  $form['field_voxb_id']['#type'] = 'hidden';
-  $form['field_voxb_alias']['#type'] = 'hidden';
-  // add custom validation method
-  $form['#validate'][] = 'bibdk_voxb_review_validate';
 }
 
 /** Check if given pid has already been handled by voxb.
@@ -68,20 +68,87 @@ function bibdk_voxb_check_voxb_review($pid, &$form){
   if(empty($data)){
     return;
   }
-  // is this a review?
-  if ( !(isset($data['voxb:item']['voxb:review'])) ){
-    // user is alreade registred, but has no reviews yet
-    // @TODO ACT ON IT
 
-
+  $identifier = isset($data['voxb:voxbIdentifier']['#text']) ? $data['voxb:voxbIdentifier']['#text'] : NULL;
+  if( !empty($identifier) ) {
+    // add voxb_id to form
+    $form['#voxb_id'] = $identifier;
   }
-  $identifier = $data['voxb:voxbIdentifier']['#text'];
-  // add voxb_id to form
-  $form['#voxb_id'] = $identifier;
+
+  // is this a review?
+  /*if ( (isset($data['voxb:item']['voxb:review'])) ){
+    // user has already written a review.
+    // @TODO ACT ON IT
+    $identifier = $data['voxb:voxbIdentifier']['#text'];
+    // add voxb_id to form
+    $form['#voxb_id'] = $identifier;
+  }*/
+  $form['#voxb_aliasname'] = $data['alias'];
+ // $form['#voxb_alias'] = array('#type'=>'value', '#value' => $data['alias']);
+
   return $data;
 }
 
+function bibdk_voxb_edit_review() {
+  $pid = bibdk_voxb_review_check_pid();
+  // we need to get the node .. if any
+  $form = array();
+  $data = bibdk_voxb_check_voxb_review($pid, $form);
+  if(isset($form['#voxb_id'])){
+    //update
+    // try to get the node
+    $blog_node = bibdk_voxb_blog_fetch_blog_node($form['#voxb_id']);
+    // fetch item from webservice. Content may have changed on voxb-service
+    $response = open_voxb_fetchData_by_itemid($form['#voxb_id']);
+    $voxb_node = bibdk_voxb_get_review_node($response);
+    // synchronize .. item may have change on voxb-service
+    $blog_node = bibdk_voxb_review_synchronize($blog_node, $voxb_node);
+  }
+  else{
+    // create
+    $blog_node = bibdk_voxb_blog_node_create();
+  }
 
+
+
+  // @TODO this should be ajax. drupal_json_output the return value
+  $block = bibdk_voxb_block_view('bibdk_voxb_blog',$blog_node);
+
+  return $block;
+}
+
+/** Synchronize a blog_node with review-node from voxb-webservice
+ *
+ * the review may have changed on webservice, so we need to update
+ * the blog node.
+ *
+ * @param $blog_node
+ * @param $voxb_node
+ */
+function bibdk_voxb_review_synchronize($blog_node, $voxb_node){
+  if(empty($blog_node)){
+    $blog_node = bibdk_voxb_blog_node_create($voxb_node);
+  }
+  // try entity_metadata thingie
+ $wrapper = entity_metadata_wrapper('node', $blog_node);
+  // alias name may have changed
+  $wrapper->field_voxb_alias->set($voxb_node->alias);
+  // title may have changed
+  if(isset($voxb_node->Title)){
+    $wrapper->title->set($voxb_node->Title);
+  }
+  // body may have change
+  if(isset($voxb_node->reviewData)){
+    $wrapper->body->set(array('value'=>$voxb_node->reviewData));
+  }
+
+
+  global $user;
+  // save the node
+  $blog_node->uid = $user->uid;
+  return $blog_node;
+  //node_save($blog_node);
+}
 
 /** Custom validator for node_blog_form. Create or updtate voxb-review
  * @param $form
@@ -90,6 +157,7 @@ function bibdk_voxb_check_voxb_review($pid, &$form){
 function bibdk_voxb_review_validate(&$form, &$form_state){
   if( !empty($form['#voxb_id'])) {
     $review = bibdk_voxb_voxb_review_from_form($form_state);
+
     $response = open_voxb_updateReview($form['#voxb_id'], $review);
     try{
       $voxb_id = bibdk_voxb_parse_update_data_response($response);
@@ -105,7 +173,6 @@ function bibdk_voxb_review_validate(&$form, &$form_state){
   else{
     $review = bibdk_voxb_voxb_review_from_form($form_state);
     $user = $form['#voxb_user_id'];
-
     // create voxb review
     $response = open_voxb_createMyReviewRequest($form['#faust'],$review,$user);
     try{
@@ -116,7 +183,7 @@ function bibdk_voxb_review_validate(&$form, &$form_state){
       // do something
 
       form_set_error('submit','HEST');
-      //die($e->getMessage());
+     // die($e->getMessage());
     }
 
     if ( $voxb_id !== FALSE ){
@@ -149,26 +216,12 @@ function bibdk_voxb_review_check_pid(){
   if(!isset($pid)){
     $pid = isset( $_GET['pid'] ) ? $_GET['pid'] : NULL;
   }
-  // this is an ajax call json_output and exit
-  if( empty($pid)){
-    return FALSE;
-    $ret = array('error' => bibdk_voxb_set_error(t('No pid in request', array(), array('context' => 'voxb')), 'status'));
-    drupal_json_output($ret);
-    exit;
-  }
-
   return $pid;
 }
 
 
 
-function bibdk_voxb_get_review_form() {
-  bibdk_voxb_review_check_pid();
-  // @TODO this should be ajax. drupal_json_output the return value
-  $block = bibdk_voxb_block_view('bibdk_voxb_blog');
 
-  return $block;
-}
 /********* block definition ***********/
 
 /** Implements hook_block_info
@@ -185,11 +238,16 @@ function bibdk_voxb_block_info() {
 /** Implements hook_block_view
  * @return array|mixed
  */
-function bibdk_voxb_block_view($delta) {
+function bibdk_voxb_block_view($delta, $blog_node) {
   $block = array();
   switch ($delta) {
     case 'bibdk_voxb_blog' :
-      $block['content'] = bibdk_voxb_review_add_node();
+    /*  if(empty($blog_node)){
+        $block['content'] = bibdk_voxb_review_add_node();
+      }
+      else{*/
+        $block['content'] = bibdk_voxb_review_edit_node($blog_node);
+      //}
       break;
   }
   return $block;

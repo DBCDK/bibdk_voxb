@@ -82,6 +82,8 @@ class bibdkVoxbUser {
       return FALSE;
     }
 
+
+
     $query = '//voxb:result';
     $nodelist = $xp->query($query);
 

@@ -37,6 +37,7 @@ function bibdk_voxb_parse_update_data_response($xml){
   }
   catch (bibdkVoxbException $e) {
     // rethrow
+
     throw $e;
   }
 
@@ -130,6 +131,27 @@ function bibdk_voxb_parse_fetchdata_request($xml) {
   return $ret;
 }
 
+/** Get the review node for a single voxb-item
+ *
+ * @param $xml
+ * @throws bibdkVoxbException
+ * @throws Exception
+ */
+function bibdk_voxb_get_review_node($xml){
+  try {
+    $xpath = bibdk_voxb_get_xpath($xml);
+  }
+  catch (bibdkVoxbException $e) {
+    // rethrow
+    throw $e;
+  }
+
+  $query = '//voxb:userItems';
+  $node_list = $xpath->query($query);
+  $review = bibdk_voxb_set_review($node_list->item(0));
+  return $review;
+}
+
 /**
  * @param $xpath
  * @return stdObject ->ratingCount, ->rating
@@ -164,10 +186,12 @@ function bibdk_voxb_set_reviews($xpath){
     foreach($nodelist as $node){
       $review = bibdk_voxb_get_review($node);
       if(!empty($review)){
+        $review->markup = bibdk_voxb_blog_node_view($review->node);
         $reviews[] = $review;
       }
     }
   }
+
   return $reviews;
 }
 
@@ -180,13 +204,22 @@ function bibdk_voxb_get_review($node){
     $review = bibdk_voxb_set_review($node);
     // try to get the blog from drupal
     $blog_node = bibdk_voxb_blog_fetch_blog_node($review->voxb_identifier);
+
     if(empty($blog_node)){
       $blog_node = bibdk_voxb_blog_node_create($review);
+      // Prepare node for saving
+      $node = node_submit($node);
+      node_save($blog_node);
+      // check if node has been saved correctly
+      if( !isset($node->nid)){
+        dpm('NODE NOT SAVED');
+      }
     }
 
-    $review->markup = bibdk_voxb_blog_node_view($blog_node);
+    $review->node = $blog_node;
     return $review;
   }
+  return FALSE;
 }
 
 /** Parse for review. given node is an userItem which holds a review
@@ -195,19 +228,28 @@ function bibdk_voxb_get_review($node){
  *
  */
 function bibdk_voxb_set_review($node){
+  $rev->voxb_userid = $node->getElementsByTagName('userId')->item(0)->nodeValue;
   $rev->alias = $node->getElementsByTagName('aliasName')->item(0)->nodeValue;
   $rev->profileLink = $node->getElementsByTagName('profileLink')->item(0)->nodeValue;
-  $rev->Title = $node->getElementsByTagName('reviewTitle')->item(0)->nodeValue;
+
   $rev->date = $node->getElementsByTagName('timestampModified')->item(0)->nodeValue;
   $identifier = $node->getElementsByTagName('voxbIdentifier')->item(0)->nodeValue;
   $rev->voxb_identifier = $identifier;
   $rev->link = bibdk_voxb_review_teaser_link($identifier);
   //$rev->reviewData = nl2br($node->getElementsByTagName('reviewData')->item(0)->nodeValue);
-  $rev->reviewData = $node->getElementsByTagName('reviewData')->item(0)->nodeValue;
-  $rev->teaser = bibdk_voxb_make_review_teaser($rev->reviewData);
+
+  if(isset($node->getElementsByTagName('reviewTitle')->item(0)->nodeValue)){
+    $rev->Title = $rev->Title = $node->getElementsByTagName('reviewTitle')->item(0)->nodeValue;
+  }
+
+  if(isset($node->getElementsByTagName('reviewData')->item(0)->nodeValue)){
+    $rev->reviewData = $node->getElementsByTagName('reviewData')->item(0)->nodeValue;
+  }
+  if(isset($rev->reviewData)){
+    $rev->teaser = bibdk_voxb_make_review_teaser($rev->reviewData);
+  }
 
   return $rev;
-
 }
 
 function bibdk_voxb_review_teaser_link($identifier){
