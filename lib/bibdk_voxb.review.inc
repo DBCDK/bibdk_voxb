@@ -142,12 +142,9 @@ function bibdk_voxb_review_synchronize($blog_node, $voxb_node){
     $wrapper->body->set(array('value'=>$voxb_node->reviewData));
   }
 
-
   global $user;
-  // save the node
   $blog_node->uid = $user->uid;
   return $blog_node;
-  //node_save($blog_node);
 }
 
 /** Custom validator for node_blog_form. Create or updtate voxb-review
