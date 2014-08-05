@@ -82,7 +82,7 @@ function bibdk_voxb_blog_node_create($review=NULL) {
   if(!empty($review->voxb_userid)){
     $userid = bibdk_voxb_node_invoke_user_hook($review->voxb_userid);
 
-    dpm($userid);
+    //dpm($userid);
 
     $account = user_load_by_mail($userid);
     $uid = $account->uid;
