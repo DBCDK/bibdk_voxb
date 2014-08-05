@@ -14,3 +14,4 @@ files[] = lib/bibdkVoxbException.php
 dependencies[] = open_voxb
 dependencies[] = bibdk_provider
 dependencies[] = blog
+dependencies[] = bibdk_voxb_blog_fields
