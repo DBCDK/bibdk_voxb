@@ -117,6 +117,17 @@ function bibdk_voxb_edit_review() {
   return $block;
 }
 
+
+function bibdk_voxb_create_review() {
+  $blog_node = bibdk_voxb_blog_node_create();
+
+  // @TODO this should be ajax. drupal_json_output the return value
+  $block = bibdk_voxb_block_view('bibdk_voxb_blog',$blog_node);
+
+  return $block;
+}
+
+
 /** Synchronize a blog_node with review-node from voxb-webservice
  *
  * the review may have changed on webservice, so we need to update

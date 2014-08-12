@@ -11,15 +11,23 @@ module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.review');
 function bibdk_voxb_menu() {
   $items = array();
 
-  $items['voxb/ajax/review'] = array(
+  $items['voxb/ajax/review/edit'] = array(
+    'title' => t('Reviews', array(), array('context' => 'voxb')),
+    'type' => MENU_CALLBACK,
+    'description' => '',
+    'access callback' => 'bibdk_voxb_user_review_access',
+    'access arguments' => array('create blog content'),
+    'page callback' => 'bibdk_voxb_edit_review',
+    'file' => 'lib/bibdk_voxb.review.inc',
+  );
+
+  $items['voxb/ajax/review/create'] = array(
     'title' => t('Write review', array(), array('context' => 'voxb')),
     'type' => MENU_CALLBACK,
     'description' => '',
     'access callback' => 'bibdk_voxb_user_review_access',
-    //'access arguments' => array('access arguments'),
     'access arguments' => array('create blog content'),
-    // 'access arguments' => array('search content'),
-    'page callback' => 'bibdk_voxb_edit_review',
+    'page callback' => 'bibdk_voxb_create_review',
     'file' => 'lib/bibdk_voxb.review.inc',
   );
 
@@ -127,7 +135,7 @@ function  bibdk_voxb_review_link($pid) {
   $link = array(
     '#theme' => 'link',
     '#text' => t('voxb_write_review', array(), array('context' => 'voxb')),
-    '#path' => 'voxb/ajax/review',
+    '#path' => 'voxb/ajax/review/create',
     '#weight' => 0,
     '#options' => array(
       'query' => array('pid' => $pid),

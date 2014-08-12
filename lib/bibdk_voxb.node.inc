@@ -66,7 +66,7 @@ function bibdk_voxb_node_view($node, $view_mode, $langcode){
  */
 
 function bibdk_voxb_blog_node_create($review=NULL) {
-  if(empty($review)){
+  if ( empty($review) ) {
     $review = new stdClass();
   }
   $node = new stdClass();
@@ -74,20 +74,20 @@ function bibdk_voxb_blog_node_create($review=NULL) {
   $node->type = "blog";
   node_object_prepare($node); // Sets some defaults. Invokes hook_prepare() and hook_node_prepare().
   $node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
-  // user anonymous user
 
+  // user anonymous user
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // get a userid
-  if(!empty($review->voxb_userid)){
+  if ( !empty($review->voxb_userid) ) {
+    $uid = 0;
     $userid = bibdk_voxb_node_invoke_user_hook($review->voxb_userid);
-
-    //dpm($userid);
-
     $account = user_load_by_mail($userid);
-    $uid = $account->uid;
+    if ( $account ) {
+      $uid = $account->uid;
+    }
   }
-  elseif(ding_user_is_provider_user()){
+  elseif ( ding_user_is_provider_user() ) {
     global $user;
     $uid = $user->uid;
     $voxb_id = bibdk_voxb_user_check();
