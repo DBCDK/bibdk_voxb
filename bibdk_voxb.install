@@ -12,6 +12,7 @@
 function bibdk_voxb_install() {
   _bibdk_voxb_increase_module_weight();
   _bibdk_voxb_enable_features();
+  _bibdk_voxb_translatables();
 }
 
 /** Increase weight of voxb module. It alters the blog_node view, and thus
@@ -38,6 +39,30 @@ function _bibdk_voxb_enable_features(){
 /** Implements hook_update_N
  *
  */
-function bibdk_voxb_update_10(){
+function bibdk_voxb_update_7001(){
   module_enable(array('bibdk_voxb_blog_fields'));
 }
+
+
+/**
+ * New translatable string placeholders
+ */
+function bibdk_voxb_update_7002(&$sandbox) {
+  _bibdk_voxb_translatables();
+}
+
+
+/**
+ * Translatable string placeholders
+ */
+function _bibdk_voxb_translatables() {
+  // context: bibdk_voxb
+  t('voxb_add_review_title', array(), array('context'=>'bibdk_voxb'));
+  t('voxb_edit_review_title', array(), array('context'=>'bibdk_voxb'));
+  t('accept_review_terms_message', array(), array('context' => 'bibdk_voxb'));
+  t('accept_review_terms_validation_message', array(), array('context' => 'bibdk_voxb'));
+
+  // context: bibdk_voxb:error
+  t('no_record_id_set_for_review', array(), array('context'=>'bibdk_voxb:error'));
+}
+

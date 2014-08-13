@@ -61,28 +61,32 @@ function bibdk_voxb_user_review_access($perm){
  *
  */
 function bibdk_voxb_rating() {
- $pid = $_POST['pid'];
- //$pid = '870970-basis:25807995';
+
+  $pid = check_plain($_POST['pid']);
+  //$pid = '870970-basis:25807995';
+
   $message = t('Rate me', array(), array('context' => 'voxb'));
 
   $lid = bibdk_voxb_pid2faust($pid);
+
   $response = open_voxb_fetchDataRequest($lid);
 
   $status = bibdk_voxb_check_response($response);
 
   // ting client return FALSE on error
-  if ($response === FALSE || $status === FALSE) {
+  if ( $response === FALSE || $status === FALSE ) {
     // this is probably a configuration error
     $ret->error = t('An error occurred. Please contact administrator if problem persists', array(), array('context' => 'voxb'));
-    watchdog('voxb', 'Ting client returned FALSE - check configuration', array(), WATCHDOG_ERROR);
+    watchdog('voxb', 'Ting client returned FALSE on open_voxb_fetchDataRequest() - check configuration', array(), WATCHDOG_ERROR);
     drupal_json_output($ret);
     drupal_exit();
 
   }
-// get ratings
-  $rating = bibdk_voxb_get_rating($response);
+  
+  // get ratings
+  $voxb_object = bibdk_voxb_get_rating($response);
 
-  if (isset($rating->error)) {
+  if ( isset($rating->error) ) {
     $ret = array(
       'pid' => $pid,
       'error' => bibdk_voxb_set_error($response->error, 'error'),
@@ -90,24 +94,23 @@ function bibdk_voxb_rating() {
   }
   else {
     $ret = array(
-      'pid' => $pid,
-      'rating' => $rating,
+      'pid'    => $pid,
+      'rating' => $voxb_object,
       'markup' => theme('voxb_rating', array(
-        'object' => $rating,
-        'pid' => $pid,
-        'title' => $message,
-        'review_link' => drupal_render(bibdk_voxb_review_link($pid)),
-        'teasers'=>theme('voxb_teaser',array(
-          'reviews'=>$rating->reviews,
-          'date_text'=>bibdk_voxb_review_teaser_text_date(),
-          'author_text'=>bibdk_voxb_review_teaser_text_author(),
-        )),
+        'object'      => $voxb_object,
+        'pid'         => $pid,
+        'title'       => $message,
+        'review_link' => bibdk_voxb_review_link($pid),
+        'teasers' => array(
+          '#theme'      => 'voxb_teaser',
+          '#reviews'     => $voxb_object->reviews,
+          '#date_text'   => bibdk_voxb_review_teaser_text_date(),
+          '#author_text' => bibdk_voxb_review_teaser_text_author(),
+        ),
       )),
     );
   }
 
-
-  //dpm($ret);
   drupal_json_output($ret);
   drupal_exit();
 }
@@ -128,6 +131,7 @@ function bibdk_voxb_review_teaser_text_author(){
  */
 function  bibdk_voxb_review_link($pid) {
   global $user;
+
   if(!ding_user_is_provider_user($user)){
     return array();
   }
@@ -222,7 +226,7 @@ function bibdk_voxb_rate_me($pid, $rating) {
 
   // check the user and get voxb_id
   $voxb_id = bibdk_voxb_user_check();
-  if ($voxb_id === FALSE) {
+  if ( $voxb_id === FALSE ) {
     $ret = array('error' => bibdk_voxb_set_error(t('Please log in to rate', array(), array('context' => 'voxb')), 'status'));
     drupal_json_output($ret);
     exit;
@@ -254,10 +258,14 @@ function bibdk_voxb_get_user_item($pid, $voxb_id){
   $alias = $voxbUser->getAliasName();
 
   $user_data = array();
-  if(!empty($data)){
+  if ( !empty($data) ) {
     // check if user has already rated this material
     $user_data = bibdk_voxb_in_multi_array($pid, $data);
     $user_data['alias'] = $alias;
+    // check if user has already reviewed (ie. accepted use of review terms)
+    $user_data['accepted_review_terms'] = bibdk_voxb_accepted_review_terms($data);
+    // $user_data['accepted_review_terms'] = bibdk_voxb_in_multi_array('voxb:rating', $data);
+
   }
   return $user_data;
 }
@@ -302,21 +310,24 @@ function bibdk_voxb_check_response( $response ){
   return TRUE;
 }
 
+
+
 /** Check user
  * 1. is ding user logged in (provider_user)
  * 2. Has user an voxb_id
  *      a. if not - create user
  * @return bool|string; FALSE if something is wrong, else voxb_id
  */
-  function bibdk_voxb_user_check($voxb_user_id = NULL) {
+function bibdk_voxb_user_check($voxb_user_id = NULL) {
   global $user;
+
   // check if user is provider user
-  if (!(ding_user_is_provider_user($user))) {
+  if ( !(ding_user_is_provider_user($user)) ) {
     return FALSE;
   }
+
   //get the voxb_id via openuserinfo webservice
   $xml = ding_provider_invoke('user', 'get_voxb', $user->mail);
-
   try {
     $voxb_id = _bibdk_voxb_parse_get_voxb_response($xml);
   }
@@ -325,23 +336,32 @@ function bibdk_voxb_check_response( $response ){
     return FALSE;
   }
 
-  // @TODO check on $type paramater. if not rating get the accept page
-  // check voxb_id
-  if ($voxb_id === '0') {
-    //invlalid (not bound) id .. create user on voxb to get a valid id
+  if ( $voxb_id === '0' ) {
+    // invalid (not bound) id .. create user on voxb to get a valid id
     // @TODO errrocheck
-    $voxb_id = bibdk_voxb_create_voxb_user($voxb_user_id);
+    $voxb_id = bibdk_voxb_create_voxb_user();
+    if ( empty($voxb_id) ) {
+      return FALSE;
+    }
+  }
+  else {
+    // TO DO: Check if the voxb_id is a valid id on the webservice?
   }
 
   return $voxb_id;
 }
 
+
+
 function bibdk_voxb_get_user_by_fingerprint(){
   global $user;
+
   $userid = bibdk_voxb_encrypt($user->mail);
+dpm($userid, __FILE__ . ':' . __LINE__);
   $xml = open_voxb_fetchUserByFingerPrint($userid);
+dpm($xml, __FILE__ . ':' . __LINE__);
   try {
-    $voxb_id = bibdk_voxb_parse_create_user_response($xml);
+    $voxb_id = bibdk_voxb_parse_create_user_response($xml, $msg);
   }
   catch (bibdkVoxbException $e) {
     watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
@@ -350,49 +370,45 @@ function bibdk_voxb_get_user_by_fingerprint(){
 
   return $voxb_id;
 }
+
+
 
 /** Create voxb user from global drupal user
  * @return bool|string; voxb_id, given from voxb-webservice on creation or FALSE on failure
  */
-function bibdk_voxb_create_voxb_user($voxb_user_id) {
-  if(!empty($voxb_user_id)){
-    if (bibdk_voxb_bind_voxb_user($voxb_user_id) === FALSE ){
-      return FALSE;
-    }
-    else{
-      return $voxb_user_id;
-    }
-  }
-
+function bibdk_voxb_create_voxb_user() {
   global $user;
-  // user is not yet bound for voxb
-  // create the user on voxb
+  $voxb_id = FALSE;
+
+  // User is not yet bound for voxb. Create the user on voxb
   $userid = bibdk_voxb_encrypt($user->mail);
   $xml = open_voxb_createUserRequest($userid);
+dpm($xml, __FILE__ . ':' . __LINE__);
 
-  // check_response method logs errors if necessary
-  bibdk_voxb_check_response($xml);
-  try {
-    $voxb_id = bibdk_voxb_parse_create_user_response($xml);
-  }
-  catch (bibdkVoxbException $e) {
-    watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
-    return FALSE;
+  // check_response method, and log errors if necessary
+  if ( bibdk_voxb_check_response($xml) ) {
+    try {
+      $voxb_id = bibdk_voxb_parse_create_user_response($xml);
+    }
+    catch (bibdkVoxbException $e) {
+      watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
+      return FALSE;
+    }
   }
 
-  // service didn't return expected result.
-  // maybe user already exists on voxb. Try to get him by fingerprint
-  if($voxb_id === FALSE){
+  // if service didn't return expected result.
+  // Then maybe user already exists on voxb. Try to get user by fingerprint
+  if ( $voxb_id === FALSE ) {
     $voxb_id = bibdk_voxb_get_user_by_fingerprint();
   }
 
-  if($voxb_id === FALSE){
+  if ( $voxb_id === FALSE ) {
     // give up
     return FALSE;
   }
 
   // voxb_id has been retrieved. Bind on OUI
-  if( bibdk_voxb_bind_voxb_user($voxb_id) === FALSE ){
+  if ( bibdk_voxb_bind_voxb_user($voxb_id) === FALSE ) {
     return FALSE;
   }
 

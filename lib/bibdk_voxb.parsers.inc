@@ -31,7 +31,7 @@ function bibdk_voxb_parse_bind_voxb_response($xml) {
   return $nodelist->item(0)->nodeValue;
 }
 
-function bibdk_voxb_parse_update_data_response($xml){
+function bibdk_voxb_parse_update_data_response($xml, &$msg = ''){
    try {
     $xp = bibdk_voxb_get_xpath($xml);
   }
@@ -43,8 +43,13 @@ function bibdk_voxb_parse_update_data_response($xml){
 
   $query = '//voxb:voxbIdentifier';
   $nodelist = $xp->query($query);
-  if ($nodelist->length != 1) {
+  if ( $nodelist->length != 1 ) {
     // something is wrong
+    /*
+    $query = '//voxb:error';
+    $error = $xp->query($query);
+    $msg = $error->item(0)->nodeValue;
+    */
     return FALSE;
   }
 
@@ -55,7 +60,7 @@ function bibdk_voxb_parse_update_data_response($xml){
  * @param $xml
  * @return bool|string
  */
-function bibdk_voxb_parse_create_user_response($xml) {
+function bibdk_voxb_parse_create_user_response($xml, &$msg = '') {
   try {
     $xp = bibdk_voxb_get_xpath($xml);
   }
@@ -68,6 +73,18 @@ function bibdk_voxb_parse_create_user_response($xml) {
   $nodelist = $xp->query($query);
   if ($nodelist->length != 1) {
     // something is wrong
+    $query = '//voxb:error';
+    $error = $xp->query($query);
+// var_dump($error);
+// dpm(print_r($error, 1), __FILE__ . ':' . __LINE__);
+    // $msg = $error->item(0)->nodeValue;
+
+    $query = '//voxb:userAliasSuggestion';
+    $user_alias_suggestion = $xp->query($query);
+// var_dump($user_alias_suggestion);
+// dpm(print_r($user_alias_suggestion, 1), __FILE__ . ':' . __LINE__);
+    // $msg = $error->item(0)->nodeValue;
+
     return FALSE;
   }
 
@@ -304,6 +321,24 @@ function bibdk_voxb_in_multi_array($needle, array $haystack) {
     // NOTICE recursive
     if (($item == $needle) || (is_array($item) && bibdk_voxb_in_multi_array($needle, $item))) {
       return $item;
+    }
+  }
+
+  return FALSE;
+}
+
+
+/** Helper function. Check if user has already reviewed (ie. accepted use of review terms)
+ * @param array $data
+ * @return boolean
+ */
+function bibdk_voxb_accepted_review_terms(array $data) {
+  if ( empty($data) ) {
+    return FALSE;
+  }
+  foreach ( $data as $item ) {
+    if ( isset($item['voxb:item']) && isset($item['voxb:item']['voxb:review']) ) {
+      return TRUE;
     }
   }
 

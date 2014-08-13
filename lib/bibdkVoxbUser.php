@@ -14,6 +14,9 @@ class bibdkVoxbUser {
   private $userInfo;
 
   public function __construct($voxb_id) {
+    if ( empty($voxb_id) ) {
+      throw new bibdkVoxbException('empty voxb_id');
+    }
     $this->userId = $voxb_id;
   }
 

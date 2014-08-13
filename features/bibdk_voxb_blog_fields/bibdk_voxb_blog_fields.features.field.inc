@@ -89,14 +89,14 @@ function bibdk_voxb_blog_fields_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-blog-field_voxb_alias'.
-  $fields['node-blog-field_voxb_alias'] = array(
+  // Exported field: 'node-blog-field_voxb_useridentifiervalue'.
+  $fields['node-blog-field_voxb_useridentifiervalue'] = array(
     'field_config' => array(
       'active' => '1',
       'cardinality' => '1',
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'field_voxb_alias',
+      'field_name' => 'field_voxb_useridentifiervalue',
       'foreign keys' => array(
         'format' => array(
           'columns' => array(
@@ -145,8 +145,8 @@ function bibdk_voxb_blog_fields_field_default_fields() {
         ),
       ),
       'entity_type' => 'node',
-      'field_name' => 'field_voxb_alias',
-      'label' => 'voxb_alias',
+      'field_name' => 'field_voxb_useridentifiervalue',
+      'label' => 'voxb_useridentifiervalue',
       'required' => FALSE,
       'settings' => array(
         'text_processing' => 0,
@@ -239,7 +239,7 @@ function bibdk_voxb_blog_fields_field_default_fields() {
   // Translatables
   // Included for use with string extractors like potx.
   t('Body');
-  t('voxb_alias');
+  t('voxb_useridentifiervalue');
   t('voxb_id');
 
   return $fields;
