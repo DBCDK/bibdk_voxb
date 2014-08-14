@@ -250,18 +250,27 @@ function bibdk_voxb_rate_me($pid, $rating) {
   }
 }
 
-function bibdk_voxb_get_user_item($pid, $voxb_id){
+
+
+function bibdk_voxb_get_user_item($pid, $voxb_id = NULL) {
+
+  if ( !$voxb_id ) {
+    return array();
+  }
+
   // init a userobject to handle user data
   $voxbUser = new bibdkVoxbUser($voxb_id);
   // data holds all activity from user (review, ratings, tags etc.)
   $data = $voxbUser->userData();
   $alias = $voxbUser->getAliasName();
+  $useridentifiervalue = $voxbUser->getUserIdentifierValue();
 
   $user_data = array();
   if ( !empty($data) ) {
     // check if user has already rated this material
     $user_data = bibdk_voxb_in_multi_array($pid, $data);
     $user_data['alias'] = $alias;
+    $user_data['useridentifiervalue'] = $useridentifiervalue;
     // check if user has already reviewed (ie. accepted use of review terms)
     $user_data['accepted_review_terms'] = bibdk_voxb_accepted_review_terms($data);
     // $user_data['accepted_review_terms'] = bibdk_voxb_in_multi_array('voxb:rating', $data);
@@ -341,11 +350,17 @@ function bibdk_voxb_user_check($voxb_user_id = NULL) {
     // @TODO errrocheck
     $voxb_id = bibdk_voxb_create_voxb_user();
     if ( empty($voxb_id) ) {
+      watchdog('voxb', 'Failed to create VoxB user.', array(), WATCHDOG_ERROR);
       return FALSE;
     }
   }
   else {
-    // TO DO: Check if the voxb_id is a valid id on the webservice?
+    // Has the user been disabled in VoxB?
+    $voxbUser = new bibdkVoxbUser($voxb_id);
+    if ( $voxb_id != $voxbUser->fetchUserId() ) {
+      watchdog('voxb', 'VoxB ID is set on provider, but not on VoxB. User may be disabled.', array(), WATCHDOG_ERROR);
+      return FALSE;
+    }
   }
 
   return $voxb_id;
@@ -357,9 +372,9 @@ function bibdk_voxb_get_user_by_fingerprint(){
   global $user;
 
   $userid = bibdk_voxb_encrypt($user->mail);
-dpm($userid, __FILE__ . ':' . __LINE__);
+// dpm($userid, __FILE__ . ':' . __LINE__);
   $xml = open_voxb_fetchUserByFingerPrint($userid);
-dpm($xml, __FILE__ . ':' . __LINE__);
+// dpm($xml, __FILE__ . ':' . __LINE__);
   try {
     $voxb_id = bibdk_voxb_parse_create_user_response($xml, $msg);
   }
@@ -383,7 +398,7 @@ function bibdk_voxb_create_voxb_user() {
   // User is not yet bound for voxb. Create the user on voxb
   $userid = bibdk_voxb_encrypt($user->mail);
   $xml = open_voxb_createUserRequest($userid);
-dpm($xml, __FILE__ . ':' . __LINE__);
+// dpm($xml, __FILE__ . ':' . __LINE__);
 
   // check_response method, and log errors if necessary
   if ( bibdk_voxb_check_response($xml) ) {

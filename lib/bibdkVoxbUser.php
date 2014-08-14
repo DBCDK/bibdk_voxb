@@ -50,6 +50,41 @@ class bibdkVoxbUser {
     return $nodelist->item(0)->nodeValue;
   }
 
+
+  public function getUserIdentifierValue(){
+    $xp = $this->getUserInfo();
+    if(empty($xp)){
+      return FALSE;
+    }
+
+    $query = '//voxb:userIdentifierValue';
+    $nodelist = $xp->query($query);
+
+    if($nodelist->length != 1){
+      return FALSE;
+    }
+
+    return $nodelist->item(0)->nodeValue;
+  }
+
+
+  public function fetchUserId(){
+    $xp = $this->getUserInfo();
+    if ( empty($xp) ) {
+      return FALSE;
+    }
+
+    $query = '//voxb:userId';
+    $nodelist = $xp->query($query);
+
+    if($nodelist->length != 1){
+      return FALSE;
+    }
+
+    return $nodelist->item(0)->nodeValue;
+  }
+
+
   private function getUserInfo(){
     if ( !empty($this->userInfo) ) {
       return $this->userInfo;

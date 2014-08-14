@@ -45,30 +45,53 @@ function bibdk_voxb_review_edit_node($blog_node) {
  * Implements hook_form_FORM_ID_alter (node_blog_form)
  *
  * alter the form here .. e.g add pid in hidden field
- * also add validate and submit methods e.g to save on voxb-webservice
+ * add accept checkbox for review terms
+ * add validate and submit methods e.g to save on voxb-webservice
  */
 function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
 
   $pid = bibdk_voxb_review_check_pid();
 
-  if ( !empty($pid) ){
-    $user_data = bibdk_voxb_check_voxb_review($pid, $form);
-    $form['#validate'][] = 'bibdk_voxb_review_validate';
-    $form['#submit'][] = 'bibdk_voxb_review_submit';
+  $voxb_user_id = bibdk_voxb_user_check();
+  $form['#voxb_user_id'] = $voxb_user_id;
 
-    if ( bibdk_voxb_user_check() && !$user_data['accepted_review_terms'] ) {
-      $form['accepted_review_terms'] = array(
-        '#type' => 'checkbox',
-        '#weight' => -15,
-        '#title' => t('accept_review_terms_message', array(), array('context' => 'bibdk_voxb')),
-        '#default_value'   => FALSE,
-        '#element_validate' => array('bibdk_voxb_accepted_review_terms_validate'),
-      );
+  $form['#validate'][] = 'bibdk_voxb_review_validate';
+  $form['#submit'][] = 'bibdk_voxb_review_submit';
+
+  if ( !empty($pid) ) {
+
+    $user_data = bibdk_voxb_check_voxb_review($pid, $form);
+
+    if ( $voxb_user_id ) {
+
+      $form['field_voxb_id']['und'][0]['value']['#default_value'] = $voxb_user_id;
+      $form['field_voxb_useridentifiervalue']['und'][0]['value']['#default_value'] = $form['#voxb_useridentifiervalue'];
+
+      if ( !$user_data['accepted_review_terms'] ) {
+        $form['accepted_review_terms'] = array(
+          '#type' => 'checkbox',
+          '#weight' => -15,
+          '#title' => t('accept_review_terms_message', array(), array('context' => 'bibdk_voxb')),
+          '#default_value'   => FALSE,
+          '#element_validate' => array('bibdk_voxb_accepted_review_terms_validate'),
+        );
+      }
+
+    }
+    else {
+
+      $form['title']['#disabled']   = TRUE;
+      $form['body']['#disabled']    = TRUE;
+      $form['actions']['#disabled'] = TRUE;
+      drupal_set_message( t('voxb_review_voxb_id_error', array(), array('context'=>'bibdk_voxb:error')), 'error');
+      watchdog('voxb', 'VoxB review : VoxB user id is missing in form', array(), WATCHDOG_ERROR);
+      return;
+
     }
 
   }
   else {
-    form_set_error('field_voxb_id', $message = t('no_record_id_set_for_review', array(), array('context'=>'bibdk_voxb:error')));
+    form_set_error('field_voxb_id', $message = t('voxb_review_no_record_id_set', array(), array('context'=>'bibdk_voxb:error')));
   }
 
 }
@@ -82,31 +105,14 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
  * @param $pid
  * @param $form
  */
-function bibdk_voxb_check_voxb_review($pid, &$form){
+function bibdk_voxb_check_voxb_review($pid, &$form) {
 
   // add faust to form. we need it in validate function
   $faust = bibdk_voxb_pid2faust($pid);
   $form['#faust'] = $faust;
 
-  // add voxb_user id to form
-  $voxb_user_id = bibdk_voxb_user_check();
-  if ( empty($voxb_user_id) ) {
-    // $form = array();
-dpm($form);
-    unset($form['title']);
-    unset($form['body']);
-    unset($form['actions']);
-    drupal_set_message( t('fubar', array(), array('context'=>'bibdk_voxb:error')), 'error');
-    watchdog('voxb', 'fubar', array(), WATCHDOG_ERROR);
-    return;
-  }
-  $form['#voxb_user_id'] = $voxb_user_id;
-
   // get data for user
-  $data = bibdk_voxb_get_user_item($faust, $voxb_user_id);
-dpm($voxb_user_id, __FILE__ . ':' . __LINE__);
-dpm($data);
-
+  $data = bibdk_voxb_get_user_item($faust, $form['#voxb_user_id']);
   if ( empty($data) ) {
     return;
   }
@@ -125,7 +131,9 @@ dpm($data);
     // add voxb_id to form
     $form['#voxb_id'] = $identifier;
   }*/
+
   $form['#voxb_aliasname'] = $data['alias'];
+  $form['#voxb_useridentifiervalue'] = $data['useridentifiervalue'];
   // $form['#voxb_alias'] = array('#type'=>'value', '#value' => $data['alias']);
 
   return $data;
@@ -150,7 +158,7 @@ function bibdk_voxb_edit_review() {
     // synchronize .. item may have change on voxb-service
     $blog_node = bibdk_voxb_review_synchronize($blog_node, $voxb_node);
   }
-  else{
+  else {
     // create
     $blog_node = bibdk_voxb_blog_node_create();
   }
@@ -164,6 +172,9 @@ function bibdk_voxb_edit_review() {
 }
 
 
+/**
+ * Create a blog node
+ */
 function bibdk_voxb_create_review() {
   $blog_node = bibdk_voxb_blog_node_create();
 
@@ -187,7 +198,7 @@ function bibdk_voxb_review_synchronize($blog_node, $voxb_node){
     $blog_node = bibdk_voxb_blog_node_create($voxb_node);
   }
   // try entity_metadata thingie
- $wrapper = entity_metadata_wrapper('node', $blog_node);
+  $wrapper = entity_metadata_wrapper('node', $blog_node);
   // alias name may have changed
   $wrapper->field_voxb_alias->set($voxb_node->alias);
   // title may have changed
@@ -205,13 +216,28 @@ function bibdk_voxb_review_synchronize($blog_node, $voxb_node){
 }
 
 
+
 /** Custom validator for node_blog_form. Create or updtate voxb-review
  * @param $form
  * @param $form_state
  */
-function bibdk_voxb_review_validate(&$form, &$form_state){
+function bibdk_voxb_review_validate(&$form, &$form_state) {
+
+  if ( empty($form_state['values']['field_voxb_id']['und'][0]['value']) ) {
+    form_set_error('field_voxb_id', t('voxb_review_voxb_id_error', array(), array('context'=>'bibdk_voxb:error')));
+  }
+
+  if ( empty($form_state['values']['field_voxb_useridentifiervalue']['und'][0]['value']) ) {
+    form_set_error('field_voxb_useridentifiervalue', t('voxb_review_useridentifiervalue_error', array(), array('context'=>'bibdk_voxb:error')));
+  }
+
+  if ( empty($form_state['values']['body']['und'][0]['value']) ) {
+    form_set_error('body', t('voxb_review_body_error', array(), array('context'=>'bibdk_voxb:error')));
+  }
 
 }
+
+
 
 /** Custom validator for node_blog_form. Create or updtate voxb-review
  * @param $form
@@ -219,40 +245,43 @@ function bibdk_voxb_review_validate(&$form, &$form_state){
  */
 function bibdk_voxb_review_submit(&$form, &$form_state){
 
-  if( !empty($form['#voxb_id'])) {
+  // update review
+
+  if ( !empty($form['#voxb_id']) ) {
+
     $review = bibdk_voxb_voxb_review_from_form($form_state);
-dpm($review);
 
     $response = open_voxb_updateReview($form['#voxb_id'], $review);
-dpm($response);
+
     try{
-      $voxb_id = bibdk_voxb_parse_update_data_response($response);
+      $voxb_id = bibdk_voxb_parse_update_data_response($response, $msg);
     }
     catch(bibdkVoxbException $e){
-
-      // malformed xml
-      // do something
-      //die($e->getMessage());
-      form_set_error('submit','HEST');
+      watchdog('voxb', 'bibdk_voxb_review_submit: ' . $msg, array(), WATCHDOG_ERROR);
+      drupal_set_message( t('bibdk_voxb_update_data_error', array(), array('context'=>'bibdk_voxb:error')), 'error');
     }
   }
-  else{
+  else {
+
+    // create review
+
     $review = bibdk_voxb_voxb_review_from_form($form_state);
 dpm($review);
+
     $user = $form['#voxb_user_id'];
+
     // create voxb review
     $response = open_voxb_createMyReviewRequest($form['#faust'],$review,$user);
 dpm($response);
+
     try {
       $msg = '';
       $voxb_id = bibdk_voxb_parse_update_data_response($response, $msg);
-dpm($voxb_id);
     }
     catch(bibdkVoxbException $e){
       // do something
       watchdog('voxb', 'malformed xml', array(), WATCHDOG_ERROR);
-dpm($msg);
-      form_set_error(NULL, $message = t('malformed xml', array(), array('context'=>'bibdk_voxb:error')));
+      form_set_error('submit', $message = t('malformed xml', array(), array('context'=>'bibdk_voxb:error')));
     }
 
     if ( $voxb_id !== FALSE ){
@@ -262,7 +291,7 @@ dpm($msg);
     else{
       // voxb webservice didn't deliver.
       watchdog('voxb', 'voxb webservice didn\'t deliver', array(), WATCHDOG_ERROR);
-      form_set_error(NULL, $message = t('voxb webservice didn\'t deliver', array(), array('context'=>'bibdk_voxb:error')));
+      form_set_error('submit', $message = t('voxb webservice didn\'t deliver', array(), array('context'=>'bibdk_voxb:error')));
     }
   }
 }

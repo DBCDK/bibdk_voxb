@@ -12,13 +12,20 @@ require_once('bibdk_voxb.node.inc');
  * @param $xml
  * @return bool|string
  */
-function bibdk_voxb_parse_bind_voxb_response($xml) {
+function bibdk_voxb_parse_bind_voxb_response($xml, &$error_msg = '') {
   try {
     $xp = bibdk_voxb_get_xpath($xml);
   }
   catch (bibdkVoxbException $e) {
     // rethrow
     throw $e;
+  }
+
+  $query = '//voxb:error';
+  $nodelist = $xp->query($query);
+  if ( $nodelist->length > 0 ) {
+    $error_msg = $nodelist->item(0)->nodeValue;
+    throw bibdkVoxbException::ouiError();
   }
 
   $query = '//oui:userId';
@@ -31,36 +38,14 @@ function bibdk_voxb_parse_bind_voxb_response($xml) {
   return $nodelist->item(0)->nodeValue;
 }
 
-function bibdk_voxb_parse_update_data_response($xml, &$msg = ''){
-   try {
-    $xp = bibdk_voxb_get_xpath($xml);
-  }
-  catch (bibdkVoxbException $e) {
-    // rethrow
 
-    throw $e;
-  }
-
-  $query = '//voxb:voxbIdentifier';
-  $nodelist = $xp->query($query);
-  if ( $nodelist->length != 1 ) {
-    // something is wrong
-    /*
-    $query = '//voxb:error';
-    $error = $xp->query($query);
-    $msg = $error->item(0)->nodeValue;
-    */
-    return FALSE;
-  }
-
-  return $nodelist->item(0)->nodeValue;
-}
-
-/** Parse the response from VOXB::createUserRequest
+/** Parse the response from VOXB::updateMyDataResponse 
  * @param $xml
- * @return bool|string
+ * @return bool|string; FALSE if something is wrong; voxb_id (userId) from voxb-service
+ * @throws Exception
  */
-function bibdk_voxb_parse_create_user_response($xml, &$msg = '') {
+function bibdk_voxb_parse_update_data_response($xml, &$error_msg = ''){
+
   try {
     $xp = bibdk_voxb_get_xpath($xml);
   }
@@ -69,22 +54,54 @@ function bibdk_voxb_parse_create_user_response($xml, &$msg = '') {
     throw $e;
   }
 
+  $query = '//voxb:error';
+  $nodelist = $xp->query($query);
+  if ( $nodelist->length > 0 ) {
+    $error_msg = $nodelist->item(0)->nodeValue;
+    throw bibdkVoxbException::ouiError();
+  }
+
+  $query = '//voxb:voxbIdentifier';
+  $nodelist = $xp->query($query);
+  if ( $nodelist->length != 1 ) {
+    // something is wrong
+    return FALSE;
+  }
+
+  return $nodelist->item(0)->nodeValue;
+
+}
+
+/** Parse the response from VOXB::createUserRequest
+ * @param $xml
+ * @return bool|string
+ */
+function bibdk_voxb_parse_create_user_response($xml, &$error_msg = '', &$suggestion='') {
+  try {
+    $xp = bibdk_voxb_get_xpath($xml);
+  }
+  catch (bibdkVoxbException $e) {
+    // rethrow
+    throw $e;
+  }
+
+  $query = '//voxb:error';
+  $nodelist = $xp->query($query);
+  if ( $nodelist->length > 0 ) {
+    $error_msg = $nodelist->item(0)->nodeValue;
+    throw bibdkVoxbException::ouiError();
+  }
+
+  $query = '//voxb:userAliasSuggestion';
+  $nodelist = $xp->query($query);
+  if ( $nodelist->length > 0 ) {
+    $suggestion = $nodelist->item(0)->nodeValue;
+  }
+
   $query = '//voxb:userId';
   $nodelist = $xp->query($query);
   if ($nodelist->length != 1) {
     // something is wrong
-    $query = '//voxb:error';
-    $error = $xp->query($query);
-// var_dump($error);
-// dpm(print_r($error, 1), __FILE__ . ':' . __LINE__);
-    // $msg = $error->item(0)->nodeValue;
-
-    $query = '//voxb:userAliasSuggestion';
-    $user_alias_suggestion = $xp->query($query);
-// var_dump($user_alias_suggestion);
-// dpm(print_r($user_alias_suggestion, 1), __FILE__ . ':' . __LINE__);
-    // $msg = $error->item(0)->nodeValue;
-
     return FALSE;
   }
 
@@ -92,12 +109,13 @@ function bibdk_voxb_parse_create_user_response($xml, &$msg = '') {
 }
 
 
+
 /** Parse response from OUI::getVoxb
  * @param $xml
  * @return bool|string; FALSE if something is wrong; voxb_id (userId) from voxb-service
  * @throws Exception
  */
-function _bibdk_voxb_parse_get_voxb_response($xml) {
+function _bibdk_voxb_parse_get_voxb_response($xml, &$error_msg = '') {
   try {
     $xp = bibdk_voxb_get_xpath($xml);
   }
@@ -109,13 +127,14 @@ function _bibdk_voxb_parse_get_voxb_response($xml) {
   $query = '//oui:error';
   $nodelist = $xp->query($query);
   if ($nodelist->length > 0) {
-    // this is fatal either a database error, or somehow user is not in database
+    // this is fatal: either a database error, or somehow user is not in database
+    $error_msg = $nodelist->item(0)->nodeValue;
     throw bibdkVoxbException::ouiError();
   }
 
   $query = '//oui:voxbId';
   $nodelist = $xp->query($query);
-  if ($nodelist->length != 1) {
+  if ( $nodelist->length != 1 ) {
     // this is NOT fatal, but something is wrong
     return FALSE;
   }
@@ -123,6 +142,8 @@ function _bibdk_voxb_parse_get_voxb_response($xml) {
 
   return $voxb_id;
 }
+
+
 
 /** Parse response xml from VOXB::fetchDataRequest
  * @param $xml

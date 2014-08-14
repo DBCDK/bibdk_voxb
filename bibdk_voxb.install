@@ -63,6 +63,12 @@ function _bibdk_voxb_translatables() {
   t('accept_review_terms_validation_message', array(), array('context' => 'bibdk_voxb'));
 
   // context: bibdk_voxb:error
-  t('no_record_id_set_for_review', array(), array('context'=>'bibdk_voxb:error'));
+  t('voxb_user_id_initialize_error', array(), array('context'=>'bibdk_voxb:error'));  // user id not found, and create user failed
+  t('voxb_review_no_record_id_set', array(), array('context'=>'bibdk_voxb:error'));   // Review validation: Record id is missing
+  t('voxb_review_voxb_id_error', array(), array('context'=>'bibdk_voxb:error'));      // Review validation: voxb id is missing
+  t('voxb_review_useridentifiervalue_error', array(), array('context'=>'bibdk_voxb:error'));  // Review validation: useridentifiervalue is missing
+  t('voxb_review_body_error', array(), array('context'=>'bibdk_voxb:error'));         // Review validation: Body is empty
+  t('Title field is required.', array(), array('context'=>'bibdk_voxb:error'));       // Review validation: Title is empty
+  t('bibdk_voxb_update_data_error', array(), array('context'=>'bibdk_voxb:error'));   // Review wasn't saved at webservice
 }
 
