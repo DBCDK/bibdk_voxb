@@ -73,3 +73,20 @@ div.ajax-anim {
 .record-tag-highlight div, .record-tag-highlight .tag {
   float: left;
 }
+
+
+.bibdk-voxb-review {
+  margin-top: 10px;
+}
+
+.bibdk-voxb-review .element-section {
+  padding: 0px;
+}
+
+.bibdk-voxb-review .element-section p {
+  margin-bottom: 0px;
+}
+
+.bibdk-write-review-link {
+
+}

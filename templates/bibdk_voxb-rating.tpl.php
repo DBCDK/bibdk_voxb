@@ -16,17 +16,19 @@
         <?php echo t('Number of ratings: ',array(),array('contexb'=>'voxb')) . $object->ratingCount;?>
     </span></p>
 
-    <span>
-      <?php print drupal_render($review_link);?>
-    </span>
-
   </div>
 
-  <div class="bibdk-article-review clearfix"></div>
+  <div class="bibdk-article-review">
+
+    <div class="bibdk-write-review-link">
+      <?php print drupal_render($review_link);?>
+    </div>
 
   <?php if ( !empty($teasers) ): ?>
     <?php print drupal_render($teasers); ?>
   <?php endif;?>
+
+  </div>
 
 </div>
 
