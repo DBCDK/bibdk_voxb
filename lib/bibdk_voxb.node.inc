@@ -19,11 +19,11 @@ function bibdk_voxb_blog_fetch_blog_node($voxb_identifier){
     ->fieldCondition('field_voxb_id', 'value', $voxb_identifier, '=');
 
   $result = $query->execute();
-  if(isset($result['node'])){
+  if ( isset($result['node']) ) {
     $blogs = node_load_multiple(array_keys($result['node']));
     // there can be only one
     $blog = current($blogs);
-    if(!empty($blog)){
+    if ( !empty($blog) ) {
       return $blog;
     }
   }

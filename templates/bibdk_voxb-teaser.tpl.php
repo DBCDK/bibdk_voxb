@@ -12,20 +12,26 @@
 <div class="bibdk-voxb-review clearfix">
 
   <div class="element-section">
+
     <p>
       <?php print $date_text;?>
       <b><?php print $review->date;?></b>
     </p>
+
     <p>
       <?php print $author_text;?>
       <b><?php print$review->alias;?></b>
     </p>
+
   </div>
 
   <div class="element-section">
     <div class="toggle-next-section">
-      <a class="show-more" href="#">view_more</a>
-      <a class="show-less visuallyhidden" href="#">view_less</a>
+      <a class="show-more" href="#"><?php print t('view_more'); ?></a>
+      <a class="show-less visuallyhidden" href="#"><?php print t('view_less'); ?></a>
+    </div>
+    <div class="bibdk-edit-review">
+      <?php print drupal_render($review->edit_link);?>
     </div>
   </div>
 

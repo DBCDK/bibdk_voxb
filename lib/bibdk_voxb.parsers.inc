@@ -158,8 +158,10 @@ function bibdk_voxb_parse_fetchdata_request($xml) {
     // rethrow
     throw $e;
   }
+
   // parse for reatings
   $ret = bibdk_voxb_set_ratings($xpath);
+
   // parse for reviews
   $reviews = bibdk_voxb_set_reviews($xpath);
   if(!empty($reviews)){
@@ -220,16 +222,19 @@ function bibdk_voxb_set_reviews($xpath){
   $reviews = array();
   $query = '//voxb:userItems';
   $nodelist = $xpath->query($query);
-  if($nodelist->length > 0){
+  if ( $nodelist->length > 0 ) {
     foreach($nodelist as $node){
-      $review = bibdk_voxb_get_review($node);
-      if(!empty($review)){
+      try {
+        $review = bibdk_voxb_get_review($node);
+      } catch (Exception $e) {
+        watchdog('voxb', 'Caught exception on bibdk_voxb_get_review(): ' .  $e->getMessage(), array(), WATCHDOG_ERROR);
+      }
+      if ( !empty($review) ) {
         $review->markup = bibdk_voxb_blog_node_view($review->node);
         $reviews[] = $review;
       }
     }
   }
-
   return $reviews;
 }
 
@@ -237,24 +242,33 @@ function bibdk_voxb_set_reviews($xpath){
  * @param $node; a node holding user-items from voxb (ratings, reviews ..)
  */
 function bibdk_voxb_get_review($node){
+
   $is_review = $node->getElementsByTagName('review');
-  if( $is_review->length > 0){
+
+  if ( $is_review->length > 0 ) {
+
     $review = bibdk_voxb_set_review($node);
+
     // try to get the blog from drupal
     $blog_node = bibdk_voxb_blog_fetch_blog_node($review->voxb_identifier);
 
-    if(empty($blog_node)){
+    if ( empty($blog_node) ) {
+
       $blog_node = bibdk_voxb_blog_node_create($review);
+
       // Prepare node for saving
-      $node = node_submit($node);
+      $node = node_submit($blog_node);
+
       node_save($blog_node);
+
       // check if node has been saved correctly
-      if( !isset($node->nid)){
-        dpm('NODE NOT SAVED');
+      if ( !isset($node->nid) ) {
+        throw new bibdkVoxbException('node not saved');
       }
     }
 
     $review->node = $blog_node;
+
     return $review;
   }
   return FALSE;
@@ -266,24 +280,34 @@ function bibdk_voxb_get_review($node){
  *
  */
 function bibdk_voxb_set_review($node){
+  global $user;
+
   $rev->voxb_userid = $node->getElementsByTagName('userId')->item(0)->nodeValue;
+
   $rev->alias = $node->getElementsByTagName('aliasName')->item(0)->nodeValue;
+
   $rev->profileLink = $node->getElementsByTagName('profileLink')->item(0)->nodeValue;
 
   $rev->date = $node->getElementsByTagName('timestampModified')->item(0)->nodeValue;
+
   $identifier = $node->getElementsByTagName('voxbIdentifier')->item(0)->nodeValue;
   $rev->voxb_identifier = $identifier;
+
+  // TO DO : redo as render array
   $rev->link = bibdk_voxb_review_teaser_link($identifier);
   //$rev->reviewData = nl2br($node->getElementsByTagName('reviewData')->item(0)->nodeValue);
 
-  if(isset($node->getElementsByTagName('reviewTitle')->item(0)->nodeValue)){
+  $rev->edit_link = bibdk_voxb_review_edit_link($identifier, $rev->voxb_userid);
+
+  if ( isset($node->getElementsByTagName('reviewTitle')->item(0)->nodeValue) ) {
     $rev->Title = $rev->Title = $node->getElementsByTagName('reviewTitle')->item(0)->nodeValue;
   }
 
-  if(isset($node->getElementsByTagName('reviewData')->item(0)->nodeValue)){
+  if ( isset($node->getElementsByTagName('reviewData')->item(0)->nodeValue) ) {
     $rev->reviewData = $node->getElementsByTagName('reviewData')->item(0)->nodeValue;
   }
-  if(isset($rev->reviewData)){
+
+  if ( isset($rev->reviewData) ) {
     $rev->teaser = bibdk_voxb_make_review_teaser($rev->reviewData);
   }
 
@@ -308,10 +332,12 @@ function bibdk_voxb_make_review_teaser($reviewTxt){
   return $teaser;
 }
 
+
 function bibdk_voxb_parser_parse_createReview($xml){
   $xpath =  bibdk_voxb_get_xpath($xml);
   return '1234';
 }
+
 
 /** Initialize an xpath object from given xml
  * @param $xml
@@ -328,6 +354,7 @@ function bibdk_voxb_get_xpath($xml) {
 
   return $xp;
 }
+
 
 /** Helper function. Check if needle is in multidimensional array
  * @param $needle

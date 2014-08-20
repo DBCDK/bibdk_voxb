@@ -19,11 +19,6 @@
   margin-bottom: 15px;
 }
 
-.bibdk_voxb_review .element-section{
-    margin:0;
-    padding: 0;
-}
-
 .add-review-textarea {
   width: 100%;
   height: 100px;
@@ -80,13 +75,23 @@ div.ajax-anim {
 }
 
 .bibdk-voxb-review .element-section {
-  padding: 0px;
+  margin:0;
+  padding: 0;
+  clear: both;
 }
 
 .bibdk-voxb-review .element-section p {
   margin-bottom: 0px;
 }
 
-.bibdk-write-review-link {
+.toggle-next-section {
+  float: left;
+}
 
+.bibdk-edit-review {
+  float: left;
+}
+
+.bibdk-edit-review-link {
+  margin-left: 10px;
 }

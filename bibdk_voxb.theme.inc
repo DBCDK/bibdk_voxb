@@ -29,11 +29,10 @@ function bibdk_voxb_theme() {
   );
 
   $items['voxb_teaser'] = array(
-    'variables'=>array(
-      'reviews'=>array(),
-      'author_text'=>'',
-      'date_text'=>'',
-      'link' => '',
+    'variables' => array(
+      'reviews'     => array(),
+      'date_text'   => '',
+      'author_text' => '',
     ),
     'template' => 'templates/bibdk_voxb-teaser',
   );

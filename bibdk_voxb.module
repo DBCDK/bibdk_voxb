@@ -100,7 +100,7 @@ function bibdk_voxb_rating() {
         'object'      => $voxb_object,
         'pid'         => $pid,
         'title'       => $message,
-        'review_link' => bibdk_voxb_review_link($pid),
+        'review_link' => bibdk_voxb_review_create_link($pid, $voxb_object->reviews),
         'teasers' => array(
           '#theme'      => 'voxb_teaser',
           '#reviews'     => $voxb_object->reviews,
@@ -128,12 +128,24 @@ function bibdk_voxb_review_teaser_text_author(){
 /** Get a link to review given pid
  *
  * @param $pid; the pid to link to
+ * @param $reviews; list of StdClass
  */
-function  bibdk_voxb_review_link($pid) {
+function  bibdk_voxb_review_create_link($pid, $reviews=array()) {
   global $user;
 
-  if(!ding_user_is_provider_user($user)){
+  // only a 'edit' link if the user is logged in
+  if ( !ding_user_is_provider_user($user) ) {
     return array();
+  }
+
+  // no 'create' link if the user has already written a review
+  $voxb_userid = bibdk_voxb_user_check(); 
+  if ( sizeof($reviews) > 0 ) {
+    foreach ( $reviews as $review ) {
+      if ( $review->voxb_userid == $voxb_userid ) {
+        return array();
+      }
+    }
   }
 
   $link = array(
@@ -145,9 +157,9 @@ function  bibdk_voxb_review_link($pid) {
       'query' => array('pid' => $pid),
       'attributes' => array(
         'class' => array(
-          'bibdk_review_link',
+          'bibdk-create-review-link',
         ),
-        'id' => drupal_html_id('bibdk_voxb_review_' . $pid),
+        'id' => drupal_html_id('bibdk_voxb_create_review_' . $pid),
       ),
       'html' => FALSE,
     ),
@@ -155,6 +167,42 @@ function  bibdk_voxb_review_link($pid) {
 
   return $link;
 }
+
+
+
+/** Get a link to edit a review, given a pid
+ *
+ * @param $pid; the pid to link to
+ */
+function bibdk_voxb_review_edit_link($pid, $voxb_userid) {
+  global $user;
+
+  // only a 'edit' link if the user has written the review
+  if ( !ding_user_is_provider_user($user) || $voxb_userid != bibdk_voxb_user_check() ) {
+    return array();
+  }
+
+  $link = array(
+    '#theme' => 'link',
+    '#text' => t('voxb_edit_review', array(), array('context' => 'voxb')),
+    '#path' => 'voxb/ajax/review/edit',
+    '#weight' => 0,
+    '#options' => array(
+      'query' => array('pid' => $pid),
+      'attributes' => array(
+        'class' => array(
+          'bibdk-edit-review-link',
+        ),
+        'id' => drupal_html_id('bibdk_voxb_edit_review_' . $pid),
+      ),
+      'html' => FALSE,
+    ),
+  );
+
+  return $link;
+}
+
+
 
 /** Wrapper for drupal_st message - return a themed message
  * @param $message
@@ -234,7 +282,7 @@ function bibdk_voxb_rate_me($pid, $rating) {
 
   $user_data= bibdk_voxb_get_user_item($pid, $voxb_id);
 
-  if (empty($user_data)) {
+  if ( empty($user_data['voxb_items']) ) {
     // this is a new rating
     $response = open_voxb_createMyDataRequest($pid, $rating, $voxb_id);
     // check response method logs errors if necessary
@@ -243,7 +291,7 @@ function bibdk_voxb_rate_me($pid, $rating) {
   else {
     // this is an update of a rating
     // get the voxbIdentifier for update request. It is in the user_data array
-    $identifier = $user_data['voxb:voxbIdentifier']['#text'];
+    $identifier = $user_data['voxb_items']['voxb:voxbIdentifier']['#text'];
     $response = open_voxb_updateRating($identifier, $rating);
     // check_response method logs errors if necessary
     bibdk_voxb_check_response($response);
@@ -261,23 +309,23 @@ function bibdk_voxb_get_user_item($pid, $voxb_id = NULL) {
   // init a userobject to handle user data
   $voxbUser = new bibdkVoxbUser($voxb_id);
   // data holds all activity from user (review, ratings, tags etc.)
-  $data = $voxbUser->userData();
+  $data  = $voxbUser->userData();
   $alias = $voxbUser->getAliasName();
   $useridentifiervalue = $voxbUser->getUserIdentifierValue();
 
   $user_data = array();
   if ( !empty($data) ) {
-    // check if user has already rated this material
-    $user_data = bibdk_voxb_in_multi_array($pid, $data);
+    // check if user has already rated or reviewed this material
+    $user_data['voxb_items'] = bibdk_voxb_in_multi_array($pid, $data);
     $user_data['alias'] = $alias;
     $user_data['useridentifiervalue'] = $useridentifiervalue;
     // check if user has already reviewed (ie. accepted use of review terms)
     $user_data['accepted_review_terms'] = bibdk_voxb_accepted_review_terms($data);
-    // $user_data['accepted_review_terms'] = bibdk_voxb_in_multi_array('voxb:rating', $data);
-
   }
   return $user_data;
 }
+
+
 
 function bibdk_voxb_check_response( $response ){
   $dom = new DOMDocument();
@@ -372,9 +420,9 @@ function bibdk_voxb_get_user_by_fingerprint(){
   global $user;
 
   $userid = bibdk_voxb_encrypt($user->mail);
-// dpm($userid, __FILE__ . ':' . __LINE__);
+
   $xml = open_voxb_fetchUserByFingerPrint($userid);
-// dpm($xml, __FILE__ . ':' . __LINE__);
+
   try {
     $voxb_id = bibdk_voxb_parse_create_user_response($xml, $msg);
   }
@@ -398,7 +446,7 @@ function bibdk_voxb_create_voxb_user() {
   // User is not yet bound for voxb. Create the user on voxb
   $userid = bibdk_voxb_encrypt($user->mail);
   $xml = open_voxb_createUserRequest($userid);
-// dpm($xml, __FILE__ . ':' . __LINE__);
+
 
   // check_response method, and log errors if necessary
   if ( bibdk_voxb_check_response($xml) ) {
