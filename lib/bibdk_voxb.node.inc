@@ -57,6 +57,44 @@ function bibdk_voxb_node_view($node, $view_mode, $langcode){
 
 }
 
+
+/** 
+ *  Function to update a blog node, based on the response from voxb
+ *
+ * @param stdObj $revew. A voxb review
+ */
+function bibdk_voxb_blog_node_update($review=NULL) {
+
+  if ( empty($review) ) {
+    return FALSE;
+  }
+
+  $blog_node = bibdk_voxb_blog_fetch_blog_node($review->voxb_identifier);
+
+  $blog_node->title = isset($review->Title) ? $review->Title : '';
+
+  $wrapper = entity_metadata_wrapper('node', $blog_node);
+
+  if ( isset($review->reviewData) ) {
+    $wrapper->body->set(array('value'=>$review->reviewData));
+  }
+
+  // Prepare node for saving
+  $node = node_submit($blog_node);
+
+  node_save($blog_node);
+
+  // check if node has been saved correctly
+  if ( !isset($node->nid) ) {
+    throw new bibdkVoxbException('node not saved');
+  }
+
+  return $blog_node;
+
+}
+
+
+
 /** Function to create a node (blog) based on the response from voxb
  *  blog node is created with uid = 0 (anonymous user). blog node is saved
  *  with the alias given from voxb (mandatory). Alias will be used to filter
@@ -64,7 +102,6 @@ function bibdk_voxb_node_view($node, $view_mode, $langcode){
  *
  * @param stdObj $revew. A voxb review
  */
-
 function bibdk_voxb_blog_node_create($review=NULL) {
   if ( empty($review) ) {
     $review = new stdClass();
@@ -105,14 +142,15 @@ function bibdk_voxb_blog_node_create($review=NULL) {
   $node->promote = 0; //(1 or 0): promoted to front page
   $node->comment = 1; // 0 = comments disabled, 1 = read only, 2 = read/write
 
-  if(isset($review->voxb_identifier)){
+  if ( isset($review->voxb_identifier) ) {
     $wrapper->field_voxb_id->set($review->voxb_identifier);
   }
-  if(isset($review->alias)){
+
+  if ( isset($review->alias) ) {
     $wrapper->field_voxb_alias->set($review->alias);
   }
-  // $node->body[$node->language][0]['value'] = $review->reviewData;
-  if(isset($review->reviewData)){
+
+  if ( isset($review->reviewData) ) {
     $wrapper->body->set(array('value'=>$review->reviewData));
   }
 

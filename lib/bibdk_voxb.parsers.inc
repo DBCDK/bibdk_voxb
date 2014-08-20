@@ -213,7 +213,7 @@ function bibdk_voxb_set_ratings($xpath){
   return $ret;
 }
 
-/** Parse for reivews
+/** Parse for reviews
  * @param $xpath
  * @return array [stdObject]
  */
@@ -250,7 +250,7 @@ function bibdk_voxb_get_review($node){
     $review = bibdk_voxb_set_review($node);
 
     // try to get the blog from drupal
-    $blog_node = bibdk_voxb_blog_fetch_blog_node($review->voxb_identifier);
+    $blog_node = bibdk_voxb_blog_node_update($review);
 
     if ( empty($blog_node) ) {
 

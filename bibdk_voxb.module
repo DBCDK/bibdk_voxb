@@ -229,7 +229,7 @@ function bibdk_voxb_pid2faust($pid, $type = 'faust'){
   $pos = strpos($pid,':');
   $lid =  substr($pid, $pos+1, strlen($pid));
 
-  switch($type){
+  switch($type) {
     case 'faust':
       return $lid;
     default:
@@ -254,7 +254,7 @@ function bibdk_voxb_get_rating($response) {
       $ret->error = $e->getMessage();
     }
   }
-  else{
+  else {
     $ret->error = theme('status_messages');
   }
 
