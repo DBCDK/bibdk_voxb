@@ -245,7 +245,7 @@ function bibdk_voxb_pid2faust($pid, $type = 'faust'){
  */
 function bibdk_voxb_get_rating($response) {
   $status = bibdk_voxb_check_response($response);
-  if($status){
+  if ( $status ) {
     try {
       $ret = bibdk_voxb_parse_fetchdata_request($response);
     }

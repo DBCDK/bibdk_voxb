@@ -61,6 +61,7 @@ function _bibdk_voxb_translatables() {
   t('voxb_edit_review_title', array(), array('context'=>'bibdk_voxb'));
   t('accept_review_terms_message', array(), array('context' => 'bibdk_voxb'));
   t('accept_review_terms_validation_message', array(), array('context' => 'bibdk_voxb'));
+  t('bibdk_voxb_review_delete_succes', array(), array('context'=>'bibdk_voxb'))
 
   // context: bibdk_voxb:error
   t('voxb_user_id_initialize_error', array(), array('context'=>'bibdk_voxb:error'));  // user id not found, and create user failed
@@ -70,5 +71,6 @@ function _bibdk_voxb_translatables() {
   t('voxb_review_body_error', array(), array('context'=>'bibdk_voxb:error'));         // Review validation: Body is empty
   t('Title field is required.', array(), array('context'=>'bibdk_voxb:error'));       // Review validation: Title is empty
   t('bibdk_voxb_update_data_error', array(), array('context'=>'bibdk_voxb:error'));   // Review wasn't saved at webservice
+  t('bibdk_voxb_review_delete_error', array(), array('context'=>'bibdk_voxb:error')); // Delete review failed
 }
 

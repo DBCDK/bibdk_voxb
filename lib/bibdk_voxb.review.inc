@@ -118,7 +118,23 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
   if ( !empty($pid) ) {
 
     $user_data = bibdk_voxb_check_voxb_review($pid, $form);
-dpm($user_data);
+
+    // TO DO: Get title & author from record if it's a new review
+    if ( !empty($user_data['voxb_items']['voxb:object']['voxb:objectContributors']['#text']) ) {
+      $object[] = $user_data['voxb_items']['voxb:object']['voxb:objectContributors']['#text'];
+    }
+    if ( !empty($user_data['voxb_items']['voxb:object']['voxb:objectTitle']['#text']) ) {
+      $object[] = $user_data['voxb_items']['voxb:object']['voxb:objectTitle']['#text'];
+    }
+    if ( !empty($object) ) {
+      $form['review_title'] = array(
+        '#type' => 'item',
+        '#weight' => -15,
+        '#title' => t('review_title_leadtext', array(), array('context' => 'bibdk_voxb')),
+        '#markup' => implode(' : ',$object),
+      );
+    }
+
     if ( $voxb_user_id ) {
 
       if ( empty($form['field_voxb_id']['und'][0]['value']['#default_value']) ) {
@@ -160,7 +176,6 @@ dpm($user_data);
       return;
 
     }
-dpm($form);
   }
   else {
     form_set_error('field_voxb_id', $message = t('voxb_review_no_record_id_set', array(), array('context'=>'bibdk_voxb:error')));
@@ -323,9 +338,6 @@ function bibdk_voxb_review_submit(&$form, &$form_state){
  */
 function bibdk_voxb_review_delete(&$form, &$form_state) {
 
-  dpm($form);
-  dpm($form_state);
-  
   // delete voxb review
   $voxbIdentifier = $form_state['values']['field_voxb_id']['und'][0]['value'];
   try {
@@ -338,6 +350,7 @@ function bibdk_voxb_review_delete(&$form, &$form_state) {
 
   // delete blog node
   node_delete($form_state['values']['nid']);
+  drupal_set_message( t('bibdk_voxb_review_delete_succes', array(), array('context'=>'bibdk_voxb')), 'status');
   
 }
 

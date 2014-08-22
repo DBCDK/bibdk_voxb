@@ -1,0 +1,24 @@
+BUGS / TO DO:
+
+reviewTitle: Max 32 tegn
+- skal være mere end dét
+
+Besked, hvis brugeren er slette(markere)t
+- giver nu: Forslag til alias
+
+US#71
+Besked, hvis en tidligere anmeldelse er slette(markere)t.
+- Giver nu: Error inserting item in database
+- skal der kunne skelnes mellem sletninger foretaget af redaktør / bruger?
+  ie. der må ikke kunne laves anmeldelse hvis redaktøren har slettet, men gerne hvis det er brugeren? 
+  og forskellige beskeder i hvert tilfælde.
+
+
+DONE:
+US#70 : checkbox og placeholder, hvis man ikke tidligere har skrevet en anmeldelse (accept_review_terms_message)
+
+US#71  Som bruger kan man slette sine anmeldelser.
+       Placeholder, hvis slettet (bibdk_voxb_review_delete_succes).
+
+- se også bibdk_voxb.install for andre translatables.
+

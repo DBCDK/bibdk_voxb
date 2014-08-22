@@ -51,10 +51,11 @@ function bibdk_voxb_blog_node_view($blog_node){
  * unset user links for now
  */
 function bibdk_voxb_node_view($node, $view_mode, $langcode){
- /* if ($node->type == 'blog'){
+ if ( $node->type == 'blog' ) {
     unset($node->content['links']);
-  }*/
-
+    unset($node->content['field_voxb_useridentifiervalue']);
+    unset($node->content['field_voxb_alias']);
+  }
 }
 
 
@@ -154,16 +155,8 @@ function bibdk_voxb_blog_node_create($review=NULL) {
     $wrapper->body->set(array('value'=>$review->reviewData));
   }
 
- // $node = node_submit($node); // Prepare node for saving
- // node_save($node);
-  //$id = $wrapper->field_voxb_id->get();
-  //dpm($id);
-  // check if node has been saved correctly
-  //if(isset($node->nid)){
-    return $node;
-  //}
+  return $node;
 
-  return FALSE;
 }
 
 /** see if anyone delivers a valid userid for given voxb_user_id
