@@ -57,20 +57,23 @@ function bibdk_voxb_user_review_access($perm){
   return $ret;
 }
 
+/** Remove link to users blog.
+ * @param $build
+ */
+function bibdk_voxb_node_view_alter(&$build) {
+  if (isset($build['links']['blog']['#links']['blog_usernames_blog'])) {
+    unset($build['links']['blog']['#links']['blog_usernames_blog']);
+  }
+}
+
 /** Ajax call-back to get rating for PID given in $_POST
  *
  */
 function bibdk_voxb_rating() {
-
   $pid = check_plain($_POST['pid']);
-  //$pid = '870970-basis:25807995';
-
   $message = t('Rate me', array(), array('context' => 'voxb'));
-
   $lid = bibdk_voxb_pid2faust($pid);
-
   $response = open_voxb_fetchDataRequest($lid);
-
   $status = bibdk_voxb_check_response($response);
 
   // ting client return FALSE on error
@@ -80,13 +83,10 @@ function bibdk_voxb_rating() {
     watchdog('voxb', 'Ting client returned FALSE on open_voxb_fetchDataRequest() - check configuration', array(), WATCHDOG_ERROR);
     drupal_json_output($ret);
     drupal_exit();
-
   }
-  
-  // get ratings
+  // get ratings and reviews
   $voxb_object = bibdk_voxb_get_rating($response);
-
-  if ( isset($rating->error) ) {
+  if ( isset($voxb_object->error) ) {
     $ret = array(
       'pid' => $pid,
       'error' => bibdk_voxb_set_error($response->error, 'error'),
@@ -301,7 +301,6 @@ function bibdk_voxb_rate_me($pid, $rating) {
 
 
 function bibdk_voxb_get_user_item($pid, $voxb_id = NULL) {
-
   if ( !$voxb_id ) {
     return array();
   }
@@ -414,15 +413,13 @@ function bibdk_voxb_user_check($voxb_user_id = NULL) {
   return $voxb_id;
 }
 
-
-
+/** Fetch voxbuser by fingerprint
+ * @return bool|string
+ */
 function bibdk_voxb_get_user_by_fingerprint(){
   global $user;
-
   $userid = bibdk_voxb_encrypt($user->mail);
-
   $xml = open_voxb_fetchUserByFingerPrint($userid);
-
   try {
     $voxb_id = bibdk_voxb_parse_create_user_response($xml, $msg);
   }
@@ -430,7 +427,6 @@ function bibdk_voxb_get_user_by_fingerprint(){
     watchdog('voxb', $e->getMessage(), array(), WATCHDOG_ERROR);
     return FALSE;
   }
-
   return $voxb_id;
 }
 
@@ -497,5 +493,6 @@ function bibdk_voxb_bind_voxb_user($voxb_user_id){
 function bibdk_voxb_encrypt($mail){
   return md5($mail);
 }
+
 
 
