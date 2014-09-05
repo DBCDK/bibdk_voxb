@@ -65,26 +65,23 @@ function bibdk_voxb_node_view($node, $view_mode, $langcode){
  * @param stdObj $revew. A voxb review
  */
 function bibdk_voxb_blog_node_update($review=NULL) {
-
   if ( empty($review) ) {
     return FALSE;
   }
-
   $blog_node = bibdk_voxb_blog_fetch_blog_node($review->voxb_identifier);
 
+  if(empty($blog_node)){
+    return FALSE;
+  }
+
   $blog_node->title = isset($review->Title) ? $review->Title : '';
-
   $wrapper = entity_metadata_wrapper('node', $blog_node);
-
   if ( isset($review->reviewData) ) {
     $wrapper->body->set(array('value'=>$review->reviewData));
   }
-
   // Prepare node for saving
   $node = node_submit($blog_node);
-
   node_save($blog_node);
-
   // check if node has been saved correctly
   if ( !isset($node->nid) ) {
     throw new bibdkVoxbException('node not saved');
@@ -118,24 +115,21 @@ function bibdk_voxb_blog_node_create($review=NULL) {
 
   // get a userid
   if ( !empty($review->voxb_userid) ) {
-    $uid = 0;
+    // is this a registred user
     $userid = bibdk_voxb_node_invoke_user_hook($review->voxb_userid);
     $account = user_load_by_mail($userid);
     if ( $account ) {
       $uid = $account->uid;
     }
   }
-  elseif ( ding_user_is_provider_user() ) {
+  elseif($voxb_id = bibdk_voxb_user_check()){
+    $review->voxb_userid = $voxb_id;
+  }
+
+  // fallback
+  if(empty($uid)){
     global $user;
     $uid = $user->uid;
-    $voxb_id = bibdk_voxb_user_check();
-    if(!empty($voxb_id)){
-      $review->voxb_userid = $voxb_id;
-    }
-  }
-  else{
-    // anonymous user
-    $uid = 0;
   }
 
   $node->uid = $uid;
@@ -143,20 +137,21 @@ function bibdk_voxb_blog_node_create($review=NULL) {
   $node->promote = 0; //(1 or 0): promoted to front page
   $node->comment = 1; // 0 = comments disabled, 1 = read only, 2 = read/write
 
+  // set extra fields
   if ( isset($review->voxb_identifier) ) {
     $wrapper->field_voxb_id->set($review->voxb_identifier);
   }
-
-  if ( isset($review->alias) ) {
+  if(isset($review->voxb_userid)){
+    $wrapper->field_voxb_useridentifiervalue->set($review->voxb_userid);
+  }
+   if( isset($review->alias) ) {
     $wrapper->field_voxb_alias->set($review->alias);
   }
-
   if ( isset($review->reviewData) ) {
     $wrapper->body->set(array('value'=>$review->reviewData));
   }
 
   return $node;
-
 }
 
 /** see if anyone delivers a valid userid for given voxb_user_id
