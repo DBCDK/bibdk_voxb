@@ -10,3 +10,4 @@ features[features_api][] = api:1
 features[field][] = node-blog-body
 features[field][] = node-blog-field_voxb_alias
 features[field][] = node-blog-field_voxb_id
+features[field][] = node-blog-field_voxb_useridentifiervalue
