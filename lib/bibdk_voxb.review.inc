@@ -11,27 +11,20 @@
  * Edit review callback
  */
 function bibdk_voxb_edit_review() {
-
   $form = array();
   $pid = bibdk_voxb_review_check_pid();
-
   $voxb_user_id = bibdk_voxb_user_check();
   if ( !empty($voxb_user_id) ) {
     $form['#voxb_user_id'] = $voxb_user_id;
   }
 
-  // we need to get the node .. if any
   $user_data = bibdk_voxb_check_voxb_review($pid, $form);
-
   if ( isset($form['#voxb_id']) ) {
-
     // try to get the node
     $blog_node = bibdk_voxb_blog_fetch_blog_node($form['#voxb_id']);
-
     // fetch item from webservice. Content may have changed on voxb-service
     $response = open_voxb_fetchData_by_itemid($form['#voxb_id']);
     $voxb_node = bibdk_voxb_get_review_node($response);
-
     // synchronize .. item may have change on voxb-service
     $blog_node = bibdk_voxb_review_synchronize($blog_node, $voxb_node);
   }
@@ -42,7 +35,6 @@ function bibdk_voxb_edit_review() {
 
   // @TODO this should be ajax. drupal_json_output the return value
   $block = bibdk_voxb_block_view('bibdk_voxb_blog',$blog_node);
-
   return $block;
 }
 
@@ -53,10 +45,8 @@ function bibdk_voxb_edit_review() {
  */
 function bibdk_voxb_create_review() {
   $blog_node = bibdk_voxb_blog_node_create();
-
   // @TODO this should be ajax. drupal_json_output the return value
   $block = bibdk_voxb_block_view('bibdk_voxb_blog',$blog_node);
-
   return $block;
 }
 
@@ -103,7 +93,6 @@ function bibdk_voxb_review_edit_node($blog_node) {
  * add validate and submit methods e.g to save on voxb-webservice
  */
 function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
-
   $pid = bibdk_voxb_review_check_pid();
   $form['#faust'] = bibdk_voxb_pid2faust($pid);
 
@@ -116,9 +105,10 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
   $form['title']['#maxlength'] = 32; // this is most likely an error at the webservice. Titles longer than 32 return 'Error updating review in database'
 
   if ( !empty($pid) ) {
-
+    // title should be fixed
+    $form['title']['#attributes'] = array('readonly' => 'readonly');
+    // get user-data from voxb
     $user_data = bibdk_voxb_check_voxb_review($pid, $form);
-
     // TO DO: Get title & author from record if it's a new review
     if ( !empty($user_data['voxb_items']['voxb:object']['voxb:objectContributors']['#text']) ) {
       $object[] = $user_data['voxb_items']['voxb:object']['voxb:objectContributors']['#text'];
@@ -133,8 +123,9 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
         '#title' => t('review_title_leadtext', array(), array('context' => 'bibdk_voxb')),
         '#markup' => implode(' : ',$object),
       );
-    }
 
+      $form['title']['#value']= implode(' : ',$object);
+    }
     if ( $voxb_user_id ) {
 
       if ( empty($form['field_voxb_id']['und'][0]['value']['#default_value']) ) {
@@ -212,7 +203,6 @@ function bibdk_voxb_check_voxb_review($pid, &$form) {
 
   $form['#voxb_aliasname'] = isset($user_data['alias']) ? $user_data['alias'] : NULL;
   $form['#voxb_useridentifiervalue'] = isset($user_data['useridentifiervalue']) ? $user_data['useridentifiervalue'] : NULL;
-  // $form['#voxb_alias'] = array('#type'=>'value', '#value' => $user_data['alias']);
 
   return $user_data;
 }
