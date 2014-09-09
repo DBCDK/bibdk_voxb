@@ -109,6 +109,7 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
     $form['title']['#attributes'] = array('readonly' => 'readonly');
     // get user-data from voxb
     $user_data = bibdk_voxb_check_voxb_review($pid, $form);
+
     // TO DO: Get title & author from record if it's a new review
     if ( !empty($user_data['voxb_items']['voxb:object']['voxb:objectContributors']['#text']) ) {
       $object[] = $user_data['voxb_items']['voxb:object']['voxb:objectContributors']['#text'];
@@ -124,7 +125,7 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
         '#markup' => implode(' : ',$object),
       );
 
-      $form['title']['#value']= implode(' : ',$object);
+      $form['title']['#value']= bibdk_voxb_review_trim_title(implode(' : ',$object));
     }
     if ( $voxb_user_id ) {
 
@@ -134,6 +135,10 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
 
       if ( empty($form['field_voxb_useridentifiervalue']['und'][0]['value']['#default_value']) ) {
         $form['field_voxb_useridentifiervalue']['und'][0]['value']['#default_value'] = $form['#voxb_useridentifiervalue'];
+      }
+
+      if ( empty($form['field_voxb_alias']['und'][0]['value']['#default_value']) ) {
+        $form['field_voxb_alias']['und'][0]['value']['#default_value'] = $form['#voxb_aliasname'];
       }
 
       if ( !$user_data['accepted_review_terms'] ) {
@@ -171,7 +176,6 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
   else {
     form_set_error('field_voxb_id', $message = t('voxb_review_no_record_id_set', array(), array('context'=>'bibdk_voxb:error')));
   }
-
 }
 
 
@@ -187,24 +191,42 @@ function bibdk_voxb_check_voxb_review($pid, &$form) {
 
   // get data for user
   if ( !empty($form['#voxb_user_id']) ) {
-    $user_data = bibdk_voxb_get_user_item($pid, $form['#voxb_user_id']);
+    $user_data = bibdk_voxb_get_user_item(bibdk_voxb_pid2faust($pid), $form['#voxb_user_id']);
   }
   if ( empty($user_data) ) {
     return;
   }
 
   $form['#voxb_id'] = NULL;
-  if ( !empty($user_data['voxb_items']['voxb:item']['voxb:review']) ) {
+ // if ( !empty($user_data['voxb_items']['voxb:item']['voxb:review']) ) {
+  if ( !empty($user_data['voxb_items']) ) {
     // user has already written a review.
     $voxb_identifier = $user_data['voxb_items']['voxb:voxbIdentifier']['#text'];
     // add voxb_id to form
     $form['#voxb_id'] = $voxb_identifier;
+  }
+  if(empty($form['#voxb_id'])){
+    $work = bibdk_voxb_get_manifestation($pid);
+    $form['title']['#value'] = bibdk_voxb_review_trim_title($work->getTitle());
   }
 
   $form['#voxb_aliasname'] = isset($user_data['alias']) ? $user_data['alias'] : NULL;
   $form['#voxb_useridentifiervalue'] = isset($user_data['useridentifiervalue']) ? $user_data['useridentifiervalue'] : NULL;
 
   return $user_data;
+}
+
+/**
+ * @param $string
+ * @param int $size
+ * @return string
+ */
+function bibdk_voxb_review_trim_title($string,$size=32){
+  if(strlen($string) <= $size){
+    return $string;
+  }
+  $trim = substr($string,0,30);
+  return $trim.'..';
 }
 
 
@@ -273,34 +295,23 @@ function bibdk_voxb_review_validate(&$form, &$form_state) {
  * @param $form_state
  */
 function bibdk_voxb_review_submit(&$form, &$form_state){
-
   $msg = '';
-
   // update review
   if ( !empty($form['#voxb_id']) ) {
-
     $review = bibdk_voxb_voxb_review_from_form($form_state);
-
     $response = open_voxb_updateReview($form['#voxb_id'], $review);
-
     try {
       $voxb_id = bibdk_voxb_parse_update_data_response($response, $msg);
     }
-
     catch(bibdkVoxbException $e){
       watchdog('voxb', 'bibdk_voxb_review_submit: ' . $msg, array(), WATCHDOG_ERROR);
       drupal_set_message( t('bibdk_voxb_update_review_error', array(), array('context'=>'bibdk_voxb:error')), 'error');
     }
-
   }
   else {
-
     // create review
-
     $review = bibdk_voxb_voxb_review_from_form($form_state);
-
     $user = $form['#voxb_user_id'];
-
     // create voxb review
     $response = open_voxb_createMyReviewRequest($form['#faust'], $review, $user);
 
