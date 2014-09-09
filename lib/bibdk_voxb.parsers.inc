@@ -243,33 +243,22 @@ function bibdk_voxb_set_reviews($xpath){
  * @param $node; a node holding user-items from voxb (ratings, reviews ..)
  */
 function bibdk_voxb_get_review($node){
-
   $is_review = $node->getElementsByTagName('review');
-
   if ( $is_review->length > 0 ) {
-
     $review = bibdk_voxb_set_review($node);
-
     // try to get the blog from drupal
     $blog_node = bibdk_voxb_blog_node_update($review);
-
     if ( empty($blog_node) ) {
-
       $blog_node = bibdk_voxb_blog_node_create($review);
-
       // Prepare node for saving
       $node = node_submit($blog_node);
-
       node_save($blog_node);
-
       // check if node has been saved correctly
       if ( !isset($node->nid) ) {
         throw new bibdkVoxbException('node not saved');
       }
     }
-
     $review->node = $blog_node;
-
     return $review;
   }
   return FALSE;
@@ -282,32 +271,22 @@ function bibdk_voxb_get_review($node){
  */
 function bibdk_voxb_set_review($node){
   global $user;
-
   $rev->voxb_userid = $node->getElementsByTagName('userId')->item(0)->nodeValue;
-
   $rev->alias = $node->getElementsByTagName('aliasName')->item(0)->nodeValue;
-
   $rev->profileLink = $node->getElementsByTagName('profileLink')->item(0)->nodeValue;
-
   $rev->date = $node->getElementsByTagName('timestampModified')->item(0)->nodeValue;
-
   $identifier = $node->getElementsByTagName('voxbIdentifier')->item(0)->nodeValue;
   $rev->voxb_identifier = $identifier;
-
   // TO DO : redo as render array
   $rev->link = bibdk_voxb_review_teaser_link($identifier);
   //$rev->reviewData = nl2br($node->getElementsByTagName('reviewData')->item(0)->nodeValue);
-
   $rev->edit_link = bibdk_voxb_review_edit_link($identifier, $rev->voxb_userid);
-
-  if ( isset($node->getElementsByTagName('reviewTitle')->item(0)->nodeValue) ) {
+    if ( isset($node->getElementsByTagName('reviewTitle')->item(0)->nodeValue) ) {
     $rev->Title = $rev->Title = $node->getElementsByTagName('reviewTitle')->item(0)->nodeValue;
   }
-
   if ( isset($node->getElementsByTagName('reviewData')->item(0)->nodeValue) ) {
     $rev->reviewData = $node->getElementsByTagName('reviewData')->item(0)->nodeValue;
   }
-
   if ( isset($rev->reviewData) ) {
     $rev->teaser = bibdk_voxb_make_review_teaser($rev->reviewData);
   }
