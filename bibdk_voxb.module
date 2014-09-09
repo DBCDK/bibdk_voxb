@@ -51,6 +51,7 @@ function bibdk_voxb_menu() {
   return $items;
 }
 
+
 function bibdk_voxb_user_review_access($perm){
   global $user;
   $ret = ding_user_is_provider_user($user);
@@ -65,6 +66,7 @@ function bibdk_voxb_node_view_alter(&$build) {
     unset($build['links']['blog']['#links']['blog_usernames_blog']);
   }
 }
+
 
 /** Ajax call-back to get rating for PID given in $_POST
  *
@@ -218,13 +220,18 @@ function bibdk_voxb_set_error($message, $type) {
 }
 
 /** VERY simple pid-parser.
- * @param $pid
+ * @param $pid. either pid or faust
  * @param string $type
  * @return string
  */
 function bibdk_voxb_pid2faust($pid, $type = 'faust'){
   // get pos of lok
   $pos = strpos($pid,'-');
+  // if string does NOT contain '-' it is not a valid pid
+  if($pos === FALSE){
+    return $pid;
+  }
+
   $lok =  substr($pid, 0, $pos);
   $pos = strpos($pid,':');
   $lid =  substr($pid, $pos+1, strlen($pid));
@@ -494,5 +501,16 @@ function bibdk_voxb_encrypt($mail){
   return md5($mail);
 }
 
+/** get a single manifestation via openformat
+ * @param $pid
+ * return manifestation
+ */
+function bibdk_voxb_get_manifestation($pid){
+  $result = ting_openformat_get_single($pid);
+  $work = reset($result)->getManifestations();
+  $manifestation = reset($work);
+
+  return $manifestation;
+}
 
 
