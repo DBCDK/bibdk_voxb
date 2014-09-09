@@ -47,6 +47,8 @@ function bibdk_voxb_blog_node_view($blog_node){
   return drupal_render(node_view($blog_node,'full'));
 }
 
+
+
 /** Implements hook_node_view
  * unset user links for now
  */
