@@ -244,23 +244,18 @@ function bibdk_voxb_review_synchronize($blog_node, $voxb_node){
   if ( empty($blog_node) ) {
     $blog_node = bibdk_voxb_blog_node_create($voxb_node);
   }
-
   // try entity_metadata thingie
   $wrapper = entity_metadata_wrapper('node', $blog_node);
-
   // alias name may have changed
   $wrapper->field_voxb_alias->set($voxb_node->alias);
-
   // title may have changed
   if ( isset($voxb_node->Title) ) {
     $wrapper->title->set($voxb_node->Title);
   }
-
   // body may have change 
   if ( isset($voxb_node->reviewData) ) {
     $wrapper->body->set(array('value'=>$voxb_node->reviewData));
   }
-
   $blog_node->uid = $user->uid;
 
   return $blog_node;
@@ -319,7 +314,6 @@ function bibdk_voxb_review_submit(&$form, &$form_state){
       $voxb_id = bibdk_voxb_parse_update_data_response($response, $msg);
     }
     catch(bibdkVoxbException $e){
-      // do something
       $voxb_id = FALSE;
       watchdog('voxb', 'create review error: ' . $msg, array(), WATCHDOG_ERROR);
       form_set_error('submit', $message = t('bibdk_voxb_create_review_error', array(), array('context'=>'bibdk_voxb:error')));
@@ -352,7 +346,6 @@ function bibdk_voxb_review_delete(&$form, &$form_state) {
   // delete blog node
   node_delete($form_state['values']['nid']);
   drupal_set_message( t('bibdk_voxb_review_delete_succes', array(), array('context'=>'bibdk_voxb')), 'status');
-  
 }
 
 
@@ -368,6 +361,7 @@ function bibdk_voxb_accepted_review_terms_validate($element, &$form_state, $form
 
 
 function bibdk_voxb_voxb_review_from_form($form_state){
+  $ret = new stdClass();
   $ret->title = $form_state['values']['title'];
   // we can use 'und' when indexing since multilingual suppoert is disabled for blogentries
   // use lang if enabling multilingual support
