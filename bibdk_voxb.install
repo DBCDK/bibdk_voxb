@@ -13,6 +13,11 @@ function bibdk_voxb_install() {
   _bibdk_voxb_increase_module_weight();
   _bibdk_voxb_enable_features();
   _bibdk_voxb_translatables();
+  _bibdk_voxb_set_variables();
+}
+
+function _bibdk_voxb_set_variable(){
+  variable_set('node_submitted_blog',1);
 }
 
 /** Increase weight of voxb module. It alters the blog_node view, and thus
@@ -50,7 +55,12 @@ function bibdk_voxb_update_7001(){
 function bibdk_voxb_update_7002(&$sandbox) {
   _bibdk_voxb_translatables();
 }
-
+/** Implements hook_update_N
+ * hide author name and date from blog-entry
+ */
+function bibdk_voxb_update_7005(&$sandbox){
+  _bibdk_voxb_set_variable();
+}
 
 /**
  * Translatable string placeholders
