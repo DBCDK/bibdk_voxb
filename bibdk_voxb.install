@@ -13,11 +13,11 @@ function bibdk_voxb_install() {
   _bibdk_voxb_increase_module_weight();
   _bibdk_voxb_enable_features();
   _bibdk_voxb_translatables();
-  _bibdk_voxb_set_variables();
+  _bibdk_voxb_set_variable();
 }
 
 function _bibdk_voxb_set_variable(){
-  variable_set('node_submitted_blog',1);
+  variable_set('node_submitted_blog',0);
 }
 
 /** Increase weight of voxb module. It alters the blog_node view, and thus
