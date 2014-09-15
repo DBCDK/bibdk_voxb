@@ -8,25 +8,25 @@
  */
 
 /** Fetch a blog node by id given from voxb webservice
- * @param $voxb_identifier; id from voxb
+ * @param $voxb_identifier ; id from voxb
  * @return mixed; blog_node if found, FALSE if not
  */
-function bibdk_voxb_blog_fetch_blog_node($voxb_identifier){
+function bibdk_voxb_blog_fetch_blog_node($voxb_identifier) {
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'blog')
-    ->propertyCondition('status', 1)
+    ->entityCondition('bundle', 'blog')->propertyCondition('status', 1)
     ->fieldCondition('field_voxb_id', 'value', $voxb_identifier, '=');
 
   $result = $query->execute();
-  if ( isset($result['node']) ) {
+  if (isset($result['node'])) {
     $blogs = node_load_multiple(array_keys($result['node']));
     // there can be only one
     $blog = current($blogs);
-    if ( !empty($blog) ) {
+    if (!empty($blog)) {
       return $blog;
     }
   }
+
   return FALSE;
 }
 
@@ -34,7 +34,7 @@ function bibdk_voxb_blog_fetch_blog_node($voxb_identifier){
  * wrapper function for node_delete
  * @param $node
  */
-function bibdk_voxb_blog_node_delete($node){
+function bibdk_voxb_blog_node_delete($node) {
   node_delete($node->nid);
 }
 
@@ -43,68 +43,74 @@ function bibdk_voxb_blog_node_delete($node){
  * @param $blog_node
  * @return string
  */
-function bibdk_voxb_blog_node_view($blog_node){
-  return drupal_render(node_view($blog_node,'full'));
+function bibdk_voxb_blog_node_view($blog_node) {
+  return drupal_render(node_view($blog_node, 'full'));
 }
-
-
 
 /** Implements hook_node_view
  * unset user links for now
  */
-function bibdk_voxb_node_view($node, $view_mode, $langcode){
- if ( $node->type == 'blog' ) {
+function bibdk_voxb_node_view($node, $view_mode, $langcode) {
+  if ($node->type == 'blog') {
     unset($node->content['links']);
     unset($node->content['field_voxb_useridentifiervalue']);
     unset($node->content['field_voxb_alias']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $voxb_id = $wrapper->field_voxb_id->value();
+    $node->content['offensive_content'] = bibdk_voxb_offensive_form($voxb_id);
+
   }
+
 }
 
-
-/** 
+/**
  *  Function to update a blog node, based on the response from voxb
  *
- * @param stdObj $revew. A voxb review
+ * @param stdObj $revew . A voxb review
  */
-function bibdk_voxb_blog_node_update($review=NULL) {
-  if ( empty($review) ) {
+function bibdk_voxb_blog_node_update($review = NULL) {
+  if (empty($review)) {
     return FALSE;
   }
+
   $blog_node = bibdk_voxb_blog_fetch_blog_node($review->voxb_identifier);
 
-  if(empty($blog_node)){
+  if (empty($blog_node)) {
     return FALSE;
   }
 
-  $blog_node->title = isset($review->Title) ? $review->Title : '';
+ /* $blog_node->title = isset($review->Title) ? $review->Title : '';
   $wrapper = entity_metadata_wrapper('node', $blog_node);
-  if ( isset($review->reviewData) ) {
-    $wrapper->body->set(array('value'=>$review->reviewData));
+  if (isset($review->reviewData)) {
+    $wrapper->body->set(array('value' => $review->reviewData));
   }
   // Prepare node for saving
   $node = node_submit($blog_node);
   node_save($blog_node);
   // check if node has been saved correctly
-  if ( !isset($node->nid) ) {
+  if (!isset($node->nid)) {
     throw new bibdkVoxbException('node not saved');
-  }
+  }*/
 
   return $blog_node;
 
 }
-
-
 
 /** Function to create a node (blog) based on the response from voxb
  *  blog node is created with uid = 0 (anonymous user). blog node is saved
  *  with the alias given from voxb (mandatory). Alias will be used to filter
  *  blog-nodes.
  *
- * @param stdObj $revew. A voxb review
+ * @param stdObj $revew . A voxb review
  */
-function bibdk_voxb_blog_node_create($review=NULL) {
-  if ( empty($review) ) {
+function bibdk_voxb_blog_node_create($review = NULL) {
+  if (empty($review)) {
     $review = new stdClass();
+    $pid = isset($_GET['pid']) ? $_GET['pid'] : NULL;
+    if (isset($pid)) {
+      $work = bibdk_voxb_get_manifestation($_GET['pid']);
+      $review->title = $work->getTitle();
+    }
   }
   $node = new stdClass();
   $node->title = isset($review->title) ? $review->title : '';
@@ -116,20 +122,20 @@ function bibdk_voxb_blog_node_create($review=NULL) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // get a userid
-  if ( !empty($review->voxb_userid) ) {
+  if (!empty($review->voxb_userid)) {
     // is this a registred user
     $userid = bibdk_voxb_node_invoke_user_hook($review->voxb_userid);
     $account = user_load_by_mail($userid);
-    if ( $account ) {
+    if ($account) {
       $uid = $account->uid;
     }
   }
-  elseif($voxb_id = bibdk_voxb_user_check()){
+  elseif ($voxb_id = bibdk_voxb_user_check()) {
     $review->voxb_userid = $voxb_id;
   }
 
   // fallback
-  if(empty($uid)){
+  if (empty($uid)) {
     global $user;
     $uid = $user->uid;
   }
@@ -140,17 +146,17 @@ function bibdk_voxb_blog_node_create($review=NULL) {
   $node->comment = 1; // 0 = comments disabled, 1 = read only, 2 = read/write
 
   // set extra fields
-  if ( isset($review->voxb_identifier) ) {
+  if (isset($review->voxb_identifier)) {
     $wrapper->field_voxb_id->set($review->voxb_identifier);
   }
-  if(isset($review->voxb_userid)){
+  if (isset($review->voxb_userid)) {
     $wrapper->field_voxb_useridentifiervalue->set($review->voxb_userid);
   }
-   if( isset($review->alias) ) {
+  if (isset($review->alias)) {
     $wrapper->field_voxb_alias->set($review->alias);
   }
-  if ( isset($review->reviewData) ) {
-    $wrapper->body->set(array('value'=>$review->reviewData));
+  if (isset($review->reviewData)) {
+    $wrapper->body->set(array('value' => $review->reviewData));
   }
 
   return $node;
@@ -159,9 +165,9 @@ function bibdk_voxb_blog_node_create($review=NULL) {
 /** see if anyone delivers a valid userid for given voxb_user_id
  * @param $voxb_user_id
  */
-function bibdk_voxb_node_invoke_user_hook($voxb_user_id){
+function bibdk_voxb_node_invoke_user_hook($voxb_user_id) {
   $userid = module_invoke_all('user_id_from_voxb_id', $voxb_user_id);
-  if(empty($userid)){
+  if (empty($userid)) {
     return 0;
   }
 
@@ -172,5 +178,5 @@ function bibdk_voxb_node_invoke_user_hook($voxb_user_id){
  * voxb
  *
  */
-function bibdk_voxb_node_load($nodes, $types){
+function bibdk_voxb_node_load($nodes, $types) {
 }

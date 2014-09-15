@@ -59,7 +59,7 @@ class bibdkVoxbUnitTestCase extends DrupalUnitTestCase {
     }
   }
 
-  public function test_bibdkUserData(){
+  public function test_bibdkUserData() {
     $path = drupal_get_path('module', 'bibdk_voxb');
     $path .= '/test/fetchMyDataResponse.xml';
     $xml = file_get_contents($path);
@@ -68,10 +68,8 @@ class bibdkVoxbUnitTestCase extends DrupalUnitTestCase {
     $bibdkUser->setUserData($xml);
 
     $data = $bibdkUser->userData();
-    $this->assertTrue(is_array($data),'userdata parsed into array');
+    $this->assertTrue(is_array($data), 'userdata parsed into array');
   }
-
-
 
   public function testInMultiArray() {
     $path = drupal_get_path('module', 'bibdk_voxb');

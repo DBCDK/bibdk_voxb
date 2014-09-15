@@ -16,8 +16,8 @@ function bibdk_voxb_install() {
   _bibdk_voxb_set_variable();
 }
 
-function _bibdk_voxb_set_variable(){
-  variable_set('node_submitted_blog',0);
+function _bibdk_voxb_set_variable() {
+  variable_set('node_submitted_blog', 0);
 }
 
 /** Increase weight of voxb module. It alters the blog_node view, and thus
@@ -25,29 +25,24 @@ function _bibdk_voxb_set_variable(){
  *
  */
 function _bibdk_voxb_increase_module_weight() {
-  db_update('system')
-    ->fields(array(
+  db_update('system')->fields(array(
       'weight' => 10,
-    ))
-    ->condition('type', 'module')
-    ->condition('name', 'bibdk_voxb')
-    ->execute();
+    ))->condition('type', 'module')->condition('name', 'bibdk_voxb')->execute();
 }
 
 /** enable module(s) that define blog-features
  *
  */
-function _bibdk_voxb_enable_features(){
+function _bibdk_voxb_enable_features() {
   module_enable(array('bibdk_voxb_blog_fields'));
 }
 
 /** Implements hook_update_N
  *
  */
-function bibdk_voxb_update_7001(){
+function bibdk_voxb_update_7001() {
   module_enable(array('bibdk_voxb_blog_fields'));
 }
-
 
 /**
  * New translatable string placeholders
@@ -55,10 +50,11 @@ function bibdk_voxb_update_7001(){
 function bibdk_voxb_update_7002(&$sandbox) {
   _bibdk_voxb_translatables();
 }
+
 /** Implements hook_update_N
  * hide author name and date from blog-entry
  */
-function bibdk_voxb_update_7005(&$sandbox){
+function bibdk_voxb_update_7005(&$sandbox) {
   _bibdk_voxb_set_variable();
 }
 
@@ -67,20 +63,20 @@ function bibdk_voxb_update_7005(&$sandbox){
  */
 function _bibdk_voxb_translatables() {
   // context: bibdk_voxb
-  t('voxb_add_review_title', array(), array('context'=>'bibdk_voxb'));
-  t('voxb_edit_review_title', array(), array('context'=>'bibdk_voxb'));
+  t('voxb_add_review_title', array(), array('context' => 'bibdk_voxb'));
+  t('voxb_edit_review_title', array(), array('context' => 'bibdk_voxb'));
   t('accept_review_terms_message', array(), array('context' => 'bibdk_voxb'));
   t('accept_review_terms_validation_message', array(), array('context' => 'bibdk_voxb'));
-  t('bibdk_voxb_review_delete_succes', array(), array('context'=>'bibdk_voxb'));
+  t('bibdk_voxb_review_delete_succes', array(), array('context' => 'bibdk_voxb'));
 
   // context: bibdk_voxb:error
-  t('voxb_user_id_initialize_error', array(), array('context'=>'bibdk_voxb:error'));  // user id not found, and create user failed
-  t('voxb_review_no_record_id_set', array(), array('context'=>'bibdk_voxb:error'));   // Review validation: Record id is missing
-  t('voxb_review_voxb_id_error', array(), array('context'=>'bibdk_voxb:error'));      // Review validation: voxb id is missing
-  t('voxb_review_useridentifiervalue_error', array(), array('context'=>'bibdk_voxb:error'));  // Review validation: useridentifiervalue is missing
-  t('voxb_review_body_error', array(), array('context'=>'bibdk_voxb:error'));         // Review validation: Body is empty
-  t('Title field is required.', array(), array('context'=>'bibdk_voxb:error'));       // Review validation: Title is empty
-  t('bibdk_voxb_update_data_error', array(), array('context'=>'bibdk_voxb:error'));   // Review wasn't saved at webservice
-  t('bibdk_voxb_review_delete_error', array(), array('context'=>'bibdk_voxb:error')); // Delete review failed
+  t('voxb_user_id_initialize_error', array(), array('context' => 'bibdk_voxb:error')); // user id not found, and create user failed
+  t('voxb_review_no_record_id_set', array(), array('context' => 'bibdk_voxb:error')); // Review validation: Record id is missing
+  t('voxb_review_voxb_id_error', array(), array('context' => 'bibdk_voxb:error')); // Review validation: voxb id is missing
+  t('voxb_review_useridentifiervalue_error', array(), array('context' => 'bibdk_voxb:error')); // Review validation: useridentifiervalue is missing
+  t('voxb_review_body_error', array(), array('context' => 'bibdk_voxb:error')); // Review validation: Body is empty
+  t('Title field is required.', array(), array('context' => 'bibdk_voxb:error')); // Review validation: Title is empty
+  t('bibdk_voxb_update_data_error', array(), array('context' => 'bibdk_voxb:error')); // Review wasn't saved at webservice
+  t('bibdk_voxb_review_delete_error', array(), array('context' => 'bibdk_voxb:error')); // Delete review failed
 }
 

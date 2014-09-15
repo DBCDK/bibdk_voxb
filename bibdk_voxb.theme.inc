@@ -21,7 +21,7 @@ function bibdk_voxb_theme() {
       'isbn' => '',
       'pid' => '',
       'title' => '',
-      'reviews'=>'',
+      'reviews' => '',
       'review_link' => '',
       'teasers' => '',
     ),
@@ -30,8 +30,8 @@ function bibdk_voxb_theme() {
 
   $items['voxb_teaser'] = array(
     'variables' => array(
-      'reviews'     => array(),
-      'date_text'   => '',
+      'reviews' => array(),
+      'date_text' => '',
       'author_text' => '',
     ),
     'template' => 'templates/bibdk_voxb-teaser',

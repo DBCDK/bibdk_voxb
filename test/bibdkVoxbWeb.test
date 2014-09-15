@@ -1,6 +1,5 @@
 <?php
 
-
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -19,13 +18,22 @@ class bibdkVoxbWebTestCase extends DrupalWebTestCase {
   public function setUp() {
     module_enable(array('open_voxb_mockup'));
     menu_rebuild();
-    parent::setUp(array('bibdk_voxb', 'open_voxb', 'open_voxb_mockup', 'ting_openformat', 'worktabs'));
+    parent::setUp(array(
+      'bibdk_voxb',
+      'open_voxb',
+      'open_voxb_mockup',
+      'ting_openformat',
+      'worktabs'
+    ));
     variable_set('open_voxb_url', $this->getAbsoluteUrl('/open_voxb_mockup/'));
     variable_set('ting_search_url', $this->getAbsoluteUrl('/open_voxb_mockup/'));
     //  variable_set('ting_search_url', 'http://bibliotek.dk/openbibdk/0.8/');
     variable_set('search_active_modules', array('ting_openformat' => 'ting_openformat'));
     variable_set('search_default_module', 'ting_openformat');
-    user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array('access content', 'search content'));
+    user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array(
+      'access content',
+      'search content'
+    ));
     menu_rebuild();
   }
 
