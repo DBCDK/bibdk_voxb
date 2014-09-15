@@ -57,7 +57,7 @@ function bibdk_voxb_node_view($node, $view_mode, $langcode) {
     unset($node->content['field_voxb_alias']);
     $wrapper = entity_metadata_wrapper('node', $node);
     $voxb_id = $wrapper->field_voxb_id->value();
-    $node->content['offensive_content'] = bibdk_voxb_offensive_form($voxb_id);
+    $node->content['offensive_content'] = bibdk_voxb_offensive_link($voxb_id);
 
   }
 
