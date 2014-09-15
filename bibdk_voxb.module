@@ -48,6 +48,15 @@ function bibdk_voxb_menu() {
     'page arguments' => array(3, 4),
   );
 
+  $items['voxb/offensive'] = array(
+    'title' => t('report_offensive_content', array(), array('context'=>'bibdk_voxb')),
+    'description' => 'testhest',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('search content'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bibdk_voxb_offensive_form'),
+  );
+
   return $items;
 }
 
