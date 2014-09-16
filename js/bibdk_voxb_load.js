@@ -13,7 +13,7 @@
   }
 
   Drupal.bibdkGetRating = function(div) {
-    div.find('.rating').last().append('<span class="ajax-progress" style="padding-left:2em; margin-top:-3px"><span class="throbber"></span></span>');
+    div.find('.rating').once().last().append('<span class="ajax-progress" style="padding-left:2em; margin-top:-3px"><span class="throbber"></span></span>');
     var pid = $(div).attr('data-pid');
     var request = $.ajax({
       url: Drupal.settings.basePath + 'voxb/ajax/get_rating',
