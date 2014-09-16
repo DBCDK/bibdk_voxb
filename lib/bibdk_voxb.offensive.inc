@@ -14,6 +14,11 @@ function bibdk_voxb_offensive_error() {
  * @return array
  */
 function bibdk_voxb_offensive_link($voxb_id) {
+  if (!ding_user_is_provider_user()) {
+    $form['login'] = bibdk_voxb_offensive_link_to_login();
+    return $form;
+  }
+
   $path = 'voxb/offensive';
   $text = t('bibdk_voxb_offensive_content', array(), array('context' => 'bibdk_voxb'));
   $link = array(
@@ -29,27 +34,47 @@ function bibdk_voxb_offensive_link($voxb_id) {
   return $link;
 }
 
+function bibdk_voxb_offensive_test_form($form, $form_state) {
+  return array(
+    'HEST'=>array('#markup'=>'TESTHEST'),
+    'HUND'=> array(
+      '#type'=>'button',
+      '#value'=>'TESTHEST',
+    )
+  );
+}
+
 function bibdk_voxb_offensive_form($form, $form_state) {
+
+ // return bibdk_voxb_offensive_test_form($form, $form_state);
+
   $voxb_id = isset ($_GET['voxb_id']) ? $_GET['voxb_id'] : NULL;
-  if(empty($voxb_id)){
+  if (empty($voxb_id)) {
     return bibdk_voxb_offensive_error();
   }
+  $form['wrapper'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('container'),
+    )
+  );
 
-  if(!ding_user_is_provider_user()){
-    $form['login'] = bibdk_voxb_offensive_link_to_login();
-    return $form;
-  }
+  $form['wrapper']['voxb_id'] = array(
+    '#type' => 'textfield',
+    '#value' => $voxb_id,
+  );
 
-  $form['#submit'] = array('bibdk_voxb_offensive_submit');
-  $form['#voxb_id'] = array(
+  $form['wrapper']['#voxb_id'] = array(
     '#type' => 'hidden',
     '#value' => $voxb_id,
   );
 
-  $form['button'] = array(
-    '#type' => 'button',
+  $form['wrapper']['button'] = array(
+    '#type' => 'submit',
     '#value' => t('bibdk_voxb_offensive_submit', array(), array('context'=>'bibdk_voxb')),
   );
+
+  $form['#submit'] = array('bibdk_voxb_offensive_submit');
 
   return $form;
 }
@@ -73,13 +98,19 @@ function bibdk_voxb_offensive_link_to_login() {
   return $link;
 }
 
+function bibdk_voxb_form_error(&$form, $message){
+  $message = t($message, array(), array('context'=>'bibdk_voxb'));
+  form_set_error('form', $message);
+}
+
 function bibdk_voxb_offensive_submit ($form, $form_state) {
   // userid and voxb_id are mandatory
   $userId = bibdk_voxb_user_check();
   $voxb_id = $form['#voxb_id'];
   if (empty($userId) || empty($voxb_id)) {
     $message = t('bibdk_voxb_failed_to_report', array(), array('context'=>'bibdk_voxb'));
-    form_set_error('submit', $message);
+    bibdk_voxb_form_error($form, $message);
+    return;
   }
 
 
