@@ -18,6 +18,7 @@
     var request = $.ajax({
       url: Drupal.settings.basePath + 'voxb/ajax/get_rating',
       type: 'POST',
+      async: false,
       data: {
         pid: pid
       },
@@ -49,11 +50,11 @@
   Drupal.voxb_settings = {
     init: function() {
       // add mouseover
-      $('.voxb-rating.rate-enabled .rating').mouseover(function(e) {
+      $('.voxb-rating.rate-enabled .star').mouseover(function(e) {
         $(this).addClass('star-hover');
       });
       // add mouseout
-      $('.voxb-rating.rate-enabled .rating').mouseout(function(e) {
+      $('.voxb-rating.rate-enabled .star').mouseout(function(e) {
         $(this).removeClass('star-hover');
       });
       // add click
@@ -73,6 +74,34 @@
       });
     }
   };
+
+  Drupal.voxb_review_set_message = function(selector,message){
+    $(selector).html(message);
+  }
+
+  Drupal.voxb_review_update = function(ajaz,response) {
+    var div = $(response.selector);
+    var tab = div.closest('.worktabs');
+    var rev = tab.find('.reviews').first();
+    var href = $(rev).attr('href');
+    var voxb_tab = $(href).find('.bibdk_voxb_tab');
+    Drupal.bibdkGetRating(voxb_tab);
+
+    Drupal.voxb_review_set_message(response.selector, response.info);
+
+    //$(response.selector).delay( 10000 ).after(response.info);
+    //$(response.info).insertAfter(response.selector);
+  };
+
+  Drupal.voxb_offensive_posted = function(ajax, response) {
+    $(response.selector).after(response.info);
+  };
+
+  // add refresh function to drupal commands
+  $(function() {
+    Drupal.ajax.prototype.commands.bibdk_voxb_offensive_posted = Drupal.voxb_offensive_posted;
+    Drupal.ajax.prototype.commands.bibdk_voxb_review_saved = Drupal.voxb_review_update;
+  });
 }
   (jQuery));
 
