@@ -67,6 +67,32 @@ function bibdk_voxb_user_review_access($perm) {
   return $ret;
 }
 
+/**
+ * refresh voxb
+ */
+function bibdk_voxb_offensive_posted ($voxb_id) {
+  $info = theme('status_messages');
+  $selector = '#bibdk-offensive-'.$voxb_id;
+  return array(
+    'command' => 'bibdk_voxb_offensive_posted',
+    'selector' => $selector,
+    'info' => $info,
+  );
+}
+
+/**
+ * update review
+ */
+function bibdk_voxb_ajax_review_saved($voxb_id) {
+  $info = theme('status_messages');
+  $selector = '#bibdk-voxb-review-message-'.$voxb_id;
+  return array(
+    'command' => 'bibdk_voxb_review_saved',
+    'selector' => $selector,
+    'info' => $info,
+  );
+}
+
 /** Remove link to users blog.
  * @param $build
  */
