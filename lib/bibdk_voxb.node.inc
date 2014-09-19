@@ -58,7 +58,6 @@ function bibdk_voxb_node_view($node, $view_mode, $langcode) {
     $wrapper = entity_metadata_wrapper('node', $node);
     $voxb_id = $wrapper->field_voxb_id->value();
     $node->content['offensive_content'] = bibdk_voxb_offensive_link($voxb_id);
-
   }
 
 }
@@ -172,11 +171,4 @@ function bibdk_voxb_node_invoke_user_hook($voxb_user_id) {
   }
 
   return $userid[0];
-}
-
-/** Use this function to add additional parameters to node e.g tags from
- * voxb
- *
- */
-function bibdk_voxb_node_load($nodes, $types) {
 }

@@ -53,27 +53,7 @@ function bibdk_voxb_create_review() {
   $block = bibdk_voxb_block_view('bibdk_voxb_blog', $blog_node);
 
   return $block;
-}
-
-/** Wrapper for add_node (@see node.pages.inc). Add node return a themed
- * form for editing a node
- *
- * @param $pid
- * @return array; render array as expected by drupal_render
- *
- */
-function bibdk_voxb_review_add_node($type = 'blog') {
-
-  if (!function_exists("node_add")) {
-    include_once(drupal_get_path('module', 'node') . '/node.pages.inc');
-  }
-
-  // node_add wraps drupal_get_form ($type_node_form)
-  $form = node_add($type);
-  drupal_set_title(t('voxb_add_review_title', array(), array('context' => 'bibdk_voxb')));
-
-  return $form;
-}
+} 
 
 function bibdk_voxb_review_edit_node($blog_node) {
   if (!function_exists("node_form")) {
@@ -97,18 +77,6 @@ function bibdk_voxb_review_modal_edit_form($form, $form_state) {
 
   return $form;
 }
-
-
-/*function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
-  $pid = bibdk_voxb_review_check_pid();
-  $form['#faust'] = bibdk_voxb_pid2faust($pid);
-
-  $voxb_user_id = bibdk_voxb_user_check();
-  $form['#voxb_user_id'] = $voxb_user_id;
-
-  $form['#validate'][] = 'bibdk_voxb_review_validate';
-  $form['#submit'][] = 'bibdk_voxb_review_submit';
-}*/
 
 /**
  * Implements hook_form_FORM_ID_alter (node_blog_form)
