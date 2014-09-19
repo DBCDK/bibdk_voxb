@@ -18,7 +18,6 @@
     var request = $.ajax({
       url: Drupal.settings.basePath + 'voxb/ajax/get_rating',
       type: 'POST',
-      async: false,
       data: {
         pid: pid
       },
@@ -62,6 +61,11 @@
         e.preventDefault();
         Drupal.voxbUpdateRating($(this));
       });
+      if(typeof(voxb_update_review_response) != 'undefined') {
+        response = voxb_update_review_response;
+        Drupal.voxb_review_set_message(response.selector, response.info);
+        voxb_update_review_response = 'undefined';
+      }
     }
   };
 
@@ -79,15 +83,20 @@
     $(selector).html(message);
   }
 
-  Drupal.voxb_review_update = function(ajaz,response) {
+  var voxb_update_review_response;
+
+  Drupal.voxb_review_update = function(ajax,response) {
     var div = $(response.selector);
     var tab = div.closest('.worktabs');
     var rev = tab.find('.reviews').first();
     var href = $(rev).attr('href');
     var voxb_tab = $(href).find('.bibdk_voxb_tab');
+
+    voxb_update_review_response = response;
+
     Drupal.bibdkGetRating(voxb_tab);
 
-    Drupal.voxb_review_set_message(response.selector, response.info);
+    //Drupal.voxb_review_set_message(response.selector, response.info);
   };
 
   Drupal.voxb_offensive_posted = function(ajax, response) {
