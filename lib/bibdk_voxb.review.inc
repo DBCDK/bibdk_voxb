@@ -140,6 +140,11 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
           '#element_validate' => array('bibdk_voxb_accepted_review_terms_validate'),
         );
       }
+
+      // hide fields
+      $form['field_voxb_id']['#type'] = 'hidden';
+      $form['field_voxb_useridentifiervalue']['#type'] = 'hidden';
+      $form['field_voxb_alias']['#type'] = 'hidden';
       
       // add delete button if review already exist
       if ( !empty($form['#node']->field_voxb_id['und'][0]['value']) ) {
