@@ -64,11 +64,6 @@ function bibdk_voxb_offensive_form($form, $form_state) {
     '#weight' => 20,
   );
 
-  $form['wrapper']['voxb_id'] = array(
-    '#type' => 'textfield',
-    '#value' => $voxb_id,
-  );
-
   $form['#voxb_id'] = array(
     '#type' => 'hidden',
     '#value' => $voxb_id,
