@@ -210,7 +210,7 @@ function bibdk_voxb_review_edit_link($pid, $voxb_userid) {
   global $user;
 
   // only a 'edit' link if the user has written the review
-  if (!$voxb_userid != bibdk_voxb_user_check()) {
+  if ($voxb_userid != bibdk_voxb_user_check()) {
     return array();
   }
 
