@@ -88,9 +88,6 @@
     Drupal.bibdkGetRating(voxb_tab);
 
     Drupal.voxb_review_set_message(response.selector, response.info);
-
-    //$(response.selector).delay( 10000 ).after(response.info);
-    //$(response.info).insertAfter(response.selector);
   };
 
   Drupal.voxb_offensive_posted = function(ajax, response) {
