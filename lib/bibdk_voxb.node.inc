@@ -105,14 +105,10 @@ function bibdk_voxb_blog_node_update($review = NULL) {
 function bibdk_voxb_blog_node_create($review = NULL) {
   if (empty($review)) {
     $review = new stdClass();
-    $pid = isset($_GET['pid']) ? $_GET['pid'] : NULL;
-    if (isset($pid)) {
-      $work = bibdk_voxb_get_manifestation($_GET['pid']);
-      $review->title = $work->getTitle();
-    }
   }
   $node = new stdClass();
-  $node->title = isset($review->title) ? $review->title : '';
+  $node->title = isset($review->title) ? $review->title : bibdk_voxb_title_from_pid();
+
   $node->type = "blog";
   node_object_prepare($node); // Sets some defaults. Invokes hook_prepare() and hook_node_prepare().
   $node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
