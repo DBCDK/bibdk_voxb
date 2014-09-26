@@ -543,4 +543,13 @@ function bibdk_voxb_get_manifestation($pid) {
   return $manifestation;
 }
 
+function bibdk_voxb_title_from_pid() {
+  $pid = isset($_GET['pid']) ? $_GET['pid'] : NULL;
+  if (isset($pid)) {
+    $work = bibdk_voxb_get_manifestation($_GET['pid']);
+    return $work->getTitle();
+  }
+  return '';
+}
+
 
