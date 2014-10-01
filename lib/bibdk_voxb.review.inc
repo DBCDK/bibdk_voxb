@@ -89,6 +89,9 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
   $pid = bibdk_voxb_review_check_pid();
   $form['#faust'] = bibdk_voxb_pid2faust($pid);
 
+  // remove preview button
+  unset ($form['actions']['preview']);
+
   $voxb_user_id = bibdk_voxb_user_check();
   $form['#voxb_user_id'] = $voxb_user_id;
 
