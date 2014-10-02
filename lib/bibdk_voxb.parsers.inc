@@ -49,6 +49,7 @@ function bibdk_voxb_parse_update_data_response($xml, &$error_msg = '') {
   }
   catch (bibdkVoxbException $e) {
     // rethrow
+    $error_msg = 'INVALID XML:' . $xml;
     throw $e;
   }
 

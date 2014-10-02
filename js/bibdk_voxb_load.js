@@ -103,10 +103,17 @@
     $(response.selector).after(response.info);
   };
 
+  Drupal.voxb_review_set_error = function (ajax,response) {
+    var voxb_tab = $('.bibdk_voxb_tab[data-pid=' + response.pid + ']');
+    var div = voxb_tab.find('.bibdk-write-review-link').first();
+    div.html(response.info);
+  }
+
   // add refresh function to drupal commands
   $(function() {
     Drupal.ajax.prototype.commands.bibdk_voxb_offensive_posted = Drupal.voxb_offensive_posted;
     Drupal.ajax.prototype.commands.bibdk_voxb_review_saved = Drupal.voxb_review_update;
+    Drupal.ajax.prototype.commands.bibdk_voxb_review_error = Drupal.voxb_review_set_error;
   });
 }
   (jQuery));

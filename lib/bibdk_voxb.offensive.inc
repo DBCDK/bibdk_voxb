@@ -15,7 +15,7 @@ function bibdk_voxb_offensive_error() {
  */
 function bibdk_voxb_offensive_link($voxb_id) {
   if (!ding_user_is_provider_user()) {
-    $form['login'] = bibdk_voxb_offensive_link_to_login();
+    $form['login'] = bibdk_voxb_link_to_login();
     return $form;
   }
 
@@ -79,24 +79,6 @@ function bibdk_voxb_offensive_form($form, $form_state) {
   return $form;
 }
 
-/** Get a link to login
- * @return string; rendered array
- */
-function bibdk_voxb_offensive_link_to_login() {
-  $message = t('bibdk_voxb_login_to_report', array(), array('context' => 'bibdk_voxb'));
-  $path = 'user/login';
-  $link = array(
-    '#theme' => 'link',
-    '#text' => $message,
-    '#path' => $path,
-    '#options' => array(
-      'attributes' => array('class' => array('bibdk-voxb-login-to-report')),
-      'html' => FALSE,
-    ),
-  );
-
-  return $link;
-}
 
 function bibdk_voxb_form_error(&$form, $message){
   $message = t($message, array(), array('context'=>'bibdk_voxb'));
