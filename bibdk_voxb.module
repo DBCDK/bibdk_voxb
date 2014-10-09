@@ -117,7 +117,7 @@ function bibdk_voxb_node_view_alter(&$build) {
  *
  */
 function bibdk_voxb_rating() {
-  $pid = check_plain($_POST['pid']);
+  $pid = bibdk_voxb_review_check_pid();
   $message = t('Rate me', array(), array('context' => 'voxb'));
   $lid = bibdk_voxb_pid2faust($pid);
   $response = open_voxb_fetchDataRequest($lid);
@@ -140,6 +140,7 @@ function bibdk_voxb_rating() {
     );
   }
   else {
+    $reviews = empty($voxb_object->reviews) ? array() : $voxb_object->reviews;
     $ret = array(
       'pid' => $pid,
       'rating' => $voxb_object,
@@ -147,7 +148,8 @@ function bibdk_voxb_rating() {
         'object' => $voxb_object,
         'pid' => $pid,
         'title' => $message,
-        'review_link' => empty($voxb_object->reviews) ? array() : bibdk_voxb_review_create_link($pid, $voxb_object->reviews),
+        'review_link' => bibdk_voxb_review_create_link($pid, $reviews),
+        'login_link' => bibdk_voxb_link_to_login(),
         'teasers' => array(
           '#theme' => 'voxb_teaser',
           '#reviews' =>empty($voxb_object->reviews) ? array() : $voxb_object->reviews,
@@ -556,18 +558,20 @@ function bibdk_voxb_encrypt($mail) {
  * @return string; rendered array
  */
 function bibdk_voxb_link_to_login() {
-  $message = t('bibdk_voxb_login_handle_reviews', array(), array('context' => 'bibdk_voxb'));
-  $path = 'user/login';
-  $link = array(
-    '#theme' => 'link',
-    '#text' => $message,
-    '#path' => $path,
-    '#options' => array(
-      'attributes' => array('class' => array('bibdk-voxb-login-to-handle')),
-      'html' => FALSE,
-    ),
-  );
-
+  $link = '';
+  if (!ding_user_is_provider_user()) {
+    $message = t('bibdk_voxb_login_handle_reviews', array(), array('context' => 'bibdk_voxb'));
+    $path = 'user/login';
+    $link = array(
+      '#theme' => 'link',
+      '#text' => $message,
+      '#path' => $path,
+      '#options' => array(
+        'attributes' => array('class' => array('bibdk-voxb-login-to-handle')),
+        'html' => FALSE,
+      ),
+    );
+  }
   return $link;
 }
 
