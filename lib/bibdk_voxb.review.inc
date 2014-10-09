@@ -373,8 +373,8 @@ function bibdk_voxb_voxb_review_from_form($form_state) {
 
 function bibdk_voxb_review_check_pid() {
   static $pid;
-  if (!isset($pid)) {
-    $pid = isset($_GET['pid']) ? check_plain($_GET['pid']) : NULL;
+  if (empty($pid)) {
+    $pid = isset($_REQUEST['pid']) ? $_REQUEST['pid'] : NULL;
   }
 
   return $pid;
