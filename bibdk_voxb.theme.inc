@@ -13,7 +13,6 @@
  * Implements hook_theme().
  */
 function bibdk_voxb_theme() {
-
   $items['voxb_rating'] = array(
     'variables' => array(
       'object' => NULL,
@@ -23,6 +22,7 @@ function bibdk_voxb_theme() {
       'title' => '',
       'reviews' => '',
       'review_link' => '',
+      'login_link' => '',
       'teasers' => '',
     ),
     'template' => 'templates/bibdk_voxb-rating',
