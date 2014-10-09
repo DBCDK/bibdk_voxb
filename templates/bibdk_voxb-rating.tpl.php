@@ -16,7 +16,9 @@
     <?php endfor; ?>
     <p class="rating-count left">
         <?php echo t('Number of ratings: ', array(), array('contexb' => 'voxb')) . $object->ratingCount; ?>
+        <?php print drupal_render($login_link);?>
     </p>
+
   </div>
 
   <div class="bibdk-write-review-link">
