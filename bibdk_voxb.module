@@ -334,6 +334,7 @@ function bibdk_voxb_rate_me($pid, $rating) {
     // this is a new rating
     $response = open_voxb_createMyDataRequest($pid, $rating, $voxb_id);
     // check response method logs errors if necessary
+    $valid = bibdk_voxb_check_response($response);
     if(!$valid){
       $ret = array('error' => bibdk_voxb_set_error(t('You may only rate once pr. minut', array(), array('context' => 'voxb')), 'status'));
       drupal_json_output($ret);
@@ -348,7 +349,7 @@ function bibdk_voxb_rate_me($pid, $rating) {
     // check_response method logs errors if necessary
     $valid = bibdk_voxb_check_response($response);
     if(!$valid){
-      $ret = array('error' => bibdk_voxb_set_error(t('You may only rate once pr. minut', array(), array('context' => 'voxb')), 'status'));
+      $ret = array('error' => bibdk_voxb_set_error(t('Sorry could not complete your rating', array(), array('context' => 'voxb')), 'status'));
       drupal_json_output($ret);
       drupal_exit();
     }
