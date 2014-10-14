@@ -156,14 +156,19 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
       $form['field_voxb_alias']['#type'] = 'hidden';
       
       // add delete button if review already exist
-      if ( !empty($form['#node']->field_voxb_id['und'][0]['value']) ) {
-        $form['actions']['delete'] = array(
-          '#type'   => 'submit',
-          '#access' => TRUE,
-          '#value'  => 'Delete',
-          '#weight' => 15,
-          '#submit' => array('bibdk_voxb_review_delete'),
-        );
+
+      // add delete button for admin users
+      global $user;
+      if ($user->uid == 1) {
+        if (!empty($form['#node']->field_voxb_id['und'][0]['value'])) {
+          $form['actions']['delete'] = array(
+            '#type' => 'submit',
+            '#access' => TRUE,
+            '#value' => 'Delete',
+            '#weight' => 15,
+            '#submit' => array('bibdk_voxb_review_delete'),
+          );
+        }
       }
     }
     else {
@@ -331,7 +336,7 @@ function bibdk_voxb_review_validate_save(&$form, &$form_state) {
   }
 }
 
-/** Custom submit for node_blog_form. Delete voxb-review
+/** Custom submit for node_blog_form.  voxb-review
  * @param $form
  * @param $form_state
  */
