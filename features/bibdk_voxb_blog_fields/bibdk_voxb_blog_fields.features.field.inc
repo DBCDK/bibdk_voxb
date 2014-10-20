@@ -35,7 +35,9 @@ function bibdk_voxb_blog_fields_field_default_fields() {
       ),
       'locked' => '0',
       'module' => 'text',
-      'settings' => array(),
+      'settings' => array(
+        'profile2_private' => FALSE,
+      ),
       'translatable' => '0',
       'type' => 'text_with_summary',
     ),
@@ -77,16 +79,17 @@ function bibdk_voxb_blog_fields_field_default_fields() {
       'entity_type' => 'node',
       'field_name' => 'body',
       'label' => 'Body',
-      'required' => FALSE,
+      'required' => 0,
       'settings' => array(
-        'display_summary' => TRUE,
-        'text_processing' => 1,
+        'display_summary' => 0,
+        'text_processing' => '1',
         'user_register_form' => FALSE,
       ),
       'widget' => array(
+        'active' => 1,
         'module' => 'text',
         'settings' => array(
-          'rows' => 20,
+          'rows' => '20',
           'summary_rows' => 5,
         ),
         'type' => 'text_textarea_with_summary',
