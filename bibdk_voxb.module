@@ -2,7 +2,7 @@
 module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.worktabs');
 module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.parsers');
 module_load_include('inc', 'bibdk_voxb', 'bibdk_voxb.theme');
-module_load_include('inc', ' bibdk_voxb', 'lib/bibdk_voxb.node');
+module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.node');
 module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.review');
 module_load_include('inc', 'bibdk_voxb', 'lib/bibdk_voxb.offensive');
 /** Implements hook_menu
