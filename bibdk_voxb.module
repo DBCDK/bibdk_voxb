@@ -452,7 +452,6 @@ function bibdk_voxb_user_check($voxb_user_id = NULL) {
 
   if ($voxb_id === '0') {
     // invalid (not bound) id .. create user on voxb to get a valid id
-    // @TODO errrocheck
     $voxb_id = bibdk_voxb_create_voxb_user();
     if (empty($voxb_id)) {
       watchdog('voxb', 'Failed to create VoxB user.', array(), WATCHDOG_ERROR);
