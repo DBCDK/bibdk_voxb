@@ -78,21 +78,7 @@ function bibdk_voxb_blog_node_update($review = NULL) {
     return FALSE;
   }
 
- /* $blog_node->title = isset($review->Title) ? $review->Title : '';
-  $wrapper = entity_metadata_wrapper('node', $blog_node);
-  if (isset($review->reviewData)) {
-    $wrapper->body->set(array('value' => $review->reviewData));
-  }
-  // Prepare node for saving
-  $node = node_submit($blog_node);
-  node_save($blog_node);
-  // check if node has been saved correctly
-  if (!isset($node->nid)) {
-    throw new bibdkVoxbException('node not saved');
-  }*/
-
   return $blog_node;
-
 }
 
 /** Function to create a node (blog) based on the response from voxb
