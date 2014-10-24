@@ -14,6 +14,7 @@ function bibdk_voxb_install() {
   _bibdk_voxb_enable_features();
   _bibdk_voxb_translatables();
   _bibdk_voxb_set_variable();
+  _bibdk_voxb_set_captcha();
 }
 
 function _bibdk_voxb_set_variable() {
@@ -58,10 +59,16 @@ function bibdk_voxb_update_7005(&$sandbox) {
   _bibdk_voxb_set_variable();
 }
 
-/** set captcha on bibdk_voxb_offensive form
- *
+/** Implements hook_update_N
+ * hide author name and date from blog-entry
  */
-function bibdk_voxb_update_7009(&$sanbox) {
+function bibdk_voxb_update_7009(&$sandbox) {
+  _bibdk_voxb_set_captcha();
+}
+/**
+ * set captcha on bibdk_voxb_offensive form
+ */
+function _bibdk_voxb_set_captcha() {
   if (module_exists('captcha')) {
     if(!function_exists('captcha_set_form_id_setting')) {
       $path = drupal_get_path('module', 'captcha');
