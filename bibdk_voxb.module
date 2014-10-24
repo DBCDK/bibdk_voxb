@@ -592,7 +592,7 @@ function bibdk_voxb_title_from_pid() {
 
   if (isset($pid)) {
     $work = bibdk_voxb_get_manifestation($_REQUEST['pid']);
-    return $work->getTitle();
+    return bibdk_voxb_review_trim_title($work->getTitle());
   }
   return '';
 }
