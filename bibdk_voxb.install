@@ -60,7 +60,7 @@ function bibdk_voxb_update_7005(&$sandbox) {
 }
 
 /** Implements hook_update_N
- * hide author name and date from blog-entry
+ * set captcha on bibdk_voxb_offensive form
  */
 function bibdk_voxb_update_7009(&$sandbox) {
   _bibdk_voxb_set_captcha();
