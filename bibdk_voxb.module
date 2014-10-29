@@ -104,6 +104,15 @@ function bibdk_voxb_ajax_review_saved($voxb_id) {
   );
 }
 
+function bibdk_voxb_ajax_review_created($pid) {
+  $info = theme('status_messages');
+  return array(
+    'command' => 'bibdk_voxb_review_created',
+    'pid' => $pid,
+    'info' => $info,
+  );
+}
+
 /** Remove link to users blog.
  * @param $build
  */
