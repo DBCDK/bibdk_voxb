@@ -99,6 +99,13 @@
     //Drupal.voxb_review_set_message(response.selector, response.info);
   };
 
+  Drupal.voxb_review_created = function(ajax,response) {
+      var pid = response.pid;
+      var tab = $('.bibdk_voxb_tab[data-pid=' + pid + ']');
+
+      Drupal.bibdkGetRating(tab);
+  }
+
   Drupal.voxb_offensive_posted = function(ajax, response) {
     $(response.selector).after(response.info);
   };
@@ -114,6 +121,7 @@
     Drupal.ajax.prototype.commands.bibdk_voxb_offensive_posted = Drupal.voxb_offensive_posted;
     Drupal.ajax.prototype.commands.bibdk_voxb_review_saved = Drupal.voxb_review_update;
     Drupal.ajax.prototype.commands.bibdk_voxb_review_error = Drupal.voxb_review_set_error;
+    Drupal.ajax.prototype.commands.bibdk_voxb_review_created = Drupal.voxb_review_created;
   });
 }
   (jQuery));
