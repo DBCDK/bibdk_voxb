@@ -5,8 +5,7 @@
  */
 
 ?>
-<div class="voxb-details pid-<?php echo $pid; ?>" xmlns="http://www.w3.org/1999/html">
-
+<div class="voxb-details pid-<?php echo $pid; ?>">
   <div class="voxb-rating rate-enabled">
     <?php for ($i = 1; $i <= 5; $i++): ?>
       <?php $star_class = ($i * 20 > $object->rating) ? 'star negative' : 'star positive'; ?>
@@ -18,21 +17,13 @@
         <?php echo t('Number of ratings: ', array(), array('contexb' => 'voxb')) . $object->ratingCount; ?>
         <?php print drupal_render($login_link);?>
     </p>
-
   </div>
-
   <div class="bibdk-write-review-link">
     <?php print drupal_render($review_link); ?>
   </div>
-
   <div >
     <?php if (!empty($teasers)): ?>
       <?php print drupal_render($teasers); ?>
     <?php endif; ?>
-
   </div>
-
 </div>
-
-
-

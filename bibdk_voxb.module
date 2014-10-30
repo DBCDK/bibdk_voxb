@@ -31,6 +31,7 @@ function bibdk_voxb_menu() {
     'file' => 'lib/bibdk_voxb.review.inc',
   );
 
+
   $items['voxb/ajax/get_rating'] = array(
     'title' => 'VoxB rating handler',
     'description' => '',
@@ -173,6 +174,7 @@ function bibdk_voxb_rating() {
   drupal_exit();
 }
 
+
 function bibdk_voxb_review_teaser_text_date() {
   return t('Reviewed_date', array(), array('context' => 'voxb'));
 }
@@ -255,6 +257,7 @@ function bibdk_voxb_review_edit_link($pid, $voxb_userid) {
 
   return $link;
 }
+
 
 /** Wrapper for drupal_st message - return a themed message
  * @param $message
