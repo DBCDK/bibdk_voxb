@@ -65,6 +65,15 @@ function bibdk_voxb_update_7005(&$sandbox) {
 function bibdk_voxb_update_7009(&$sandbox) {
   _bibdk_voxb_set_captcha();
 }
+
+/**
+* Implements hook_update_N
+* Enable blog module
+*/
+function bibdk_voxb_update_7010(&$sandbox) {
+  module_enable(array('blog'));
+}
+
 /**
  * set captcha on bibdk_voxb_offensive form
  */
