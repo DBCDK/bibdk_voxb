@@ -20,14 +20,14 @@ class bibdkVoxbUnitTestCase extends DrupalUnitTestCase {
   }
 
   public function testFetchDataParsing() {
-    $path = drupal_get_path('module', 'bibdk_voxb');
-
     $path = drupal_get_path('module', 'open_voxb_mockup');
     $xml = file_get_contents($path . '/fetchDataResponse.xml');
     $xml = trim($xml);
     $resp = bibdk_voxb_parse_fetchdata_request($xml);
-    $this->assertTrue(isset($resp->rating), 'rating is set on response object');
-    $this->assertTrue(isset($resp->ratingCount), 'ratingCount is set on response object');
+
+
+    $this->assertTrue(!empty($resp->rating), 'rating is set on response object');
+    $this->assertTrue(!empty($resp->ratingCount), 'ratingCount is set on response object');
 
     $xml = 'hest';
     try {
@@ -59,19 +59,17 @@ class bibdkVoxbUnitTestCase extends DrupalUnitTestCase {
     }
   }
 
-  public function test_bibdkUserData(){
+  public function test_bibdkUserData() {
     $path = drupal_get_path('module', 'bibdk_voxb');
     $path .= '/test/fetchMyDataResponse.xml';
     $xml = file_get_contents($path);
 
-    $bibdkUser = new bibdkVoxbUser(199147);
+    $bibdkUser = new bibdkVoxbUser(215507);
     $bibdkUser->setUserData($xml);
 
     $data = $bibdkUser->userData();
-    $this->assertTrue(is_array($data),'userdata parsed into array');
+    $this->assertTrue(is_array($data), 'userdata parsed into array');
   }
-
-
 
   public function testInMultiArray() {
     $path = drupal_get_path('module', 'bibdk_voxb');
