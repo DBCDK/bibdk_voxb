@@ -15,13 +15,13 @@
     <?php endfor; ?>
     <p class="rating-count left">
         <?php echo t('Number of ratings: ', array(), array('contexb' => 'voxb')) . $object->ratingCount; ?>
-        <?php print drupal_render($login_link);?>
     </p>
+    <?php print drupal_render($login_link);?>
   </div>
   <div class="bibdk-write-review-link">
     <?php print drupal_render($review_link); ?>
   </div>
-  <div >
+  <div class="bibdk_voxb_clear">
     <?php if (!empty($teasers)): ?>
       <?php print drupal_render($teasers); ?>
     <?php endif; ?>
