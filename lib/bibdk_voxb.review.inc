@@ -113,7 +113,7 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
     $user_data = bibdk_voxb_check_voxb_review($pid, $form);
 
     // TO DO: Get title & author from record if it's a new review
-    if ( !empty($user_data['voxb_items']['voxb:object']['voxb:objectContributors']['#text']) ) {
+    /*if ( !empty($user_data['voxb_items']['voxb:object']['voxb:objectContributors']['#text']) ) {
       $object[] = $user_data['voxb_items']['voxb:object']['voxb:objectContributors']['#text'];
     }
     if ( !empty($user_data['voxb_items']['voxb:object']['voxb:objectTitle']['#text']) ) {
@@ -126,7 +126,7 @@ function bibdk_voxb_form_blog_node_form_alter(&$form, &$form_state) {
         '#title' => t('review_title_leadtext', array(), array('context' => 'bibdk_voxb')),
         '#markup' => implode(' : ',$object),
       );
-    }
+    }*/
     if ( $voxb_user_id ) {
       if ( empty($form['field_voxb_id']['und'][0]['value']['#default_value']) ) {
         $form['field_voxb_id']['und'][0]['value']['#default_value'] = $form['#voxb_id'];
