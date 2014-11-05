@@ -12,19 +12,14 @@
  * @return type
  */
 function bibdk_voxb_worktabs_items($entity) {
-  $tabs= array();
+  $tabs = array();
   $render_array = bibdk_voxb_get_rating_container($entity);
-
-  if ($render_array === FALSE) {
-    return;
-  }
 
   $tabs['reviews']['voxb'] = array(
     '#title' => array(
       '#type' => 'translatable',
       '#translate' => 'VOXB review',
     ),
-
     '#content' => $render_array,
     '#more_id' => drupal_html_id('voxb-' . $entity->id),
     '#weight' => 0,
