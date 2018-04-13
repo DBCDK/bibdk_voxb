@@ -6,10 +6,17 @@
   Bibdk_voxb.bibdkSetRating = function(voxb) {
     if(voxb.error) {
       $('.bibdk_voxb_tab[data-pid="' + voxb.pid + '"]').prepend(voxb.error);
+      throw new Error(voxb.error);
     }
     else {
       var element = $('.bibdk_voxb_tab[data-pid="' + voxb.pid + '"]');
       element.html(voxb.markup);
+
+        if(voxb.no_review_txt != 'NONE'){
+            var title = element.closest('.tab-item').find('[id^="selid-worktab-voxb"]');
+            title.html(voxb.no_review_txt);
+         }
+
       // attach behaviours to stay in context
       Drupal.attachBehaviors(element);
       Bibdk_voxb.voxb_settings.init(voxb);
@@ -17,13 +24,10 @@
   };
 
   Bibdk_voxb.bibdkGetRating = function(div) {
-    div.find('.rating')
-      .one()
-      .last()
-      .append('<span class="ajax-progress" style="padding-left:2em; margin-top:-3px"><span class="throbber"></span></span>');
+    div.find('.rating').once().last().append('<span class="ajax-progress" style="padding-left:2em; margin-top:-3px"><span class="throbber"></span></span>');
     var pid = $(div).attr('data-pid');
     var request = $.ajax({
-      url: Drupal.settings.basePath + 'voxb/ajax/get_rating',
+      url: Drupal.settings.basePath + Drupal.settings.pathPrefix + 'voxb/ajax/get_rating',
       type: 'POST',
       data: {
         pid: pid
@@ -34,7 +38,7 @@
   };
 
   Bibdk_voxb.voxbUpdateRating = function(link) {
-    var href = Drupal.settings.basePath + link.attr('href');
+    var href = Drupal.settings.basePath + Drupal.settings.pathPrefix + link.attr('href');
     // find the div holding the link
     var div = link.closest('.bibdk_voxb_tab');
     // show a throbber
@@ -65,7 +69,7 @@
       // add click
       $('.voxb-rating.rate-enabled .rating').click(function(e) {
         e.preventDefault();
-        Drupal.voxbUpdateRating($(this));
+        Bibdk_voxb.voxbUpdateRating($(this));
       });
       if(typeof(voxb_update_review_response) != 'undefined') {
         var response = voxb_update_review_response;
@@ -93,7 +97,7 @@
 
   Bibdk_voxb.voxb_review_created = function(ajax, response) {
     var pid = response.pid;
-    var tab = $('.bibdk_voxb_tab[data-pid=' + pid + ']');
+    var tab = $('.bibdk_voxb_tab[data-pid="' + pid + '"]');
 
     Bibdk_voxb.bibdkGetRating(tab);
   };
